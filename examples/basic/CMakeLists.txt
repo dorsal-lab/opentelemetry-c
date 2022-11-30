@@ -1,0 +1,5 @@
+project(basic-example C)
+set(CMAKE_C_STANDARD 11)
+add_executable(basic-example)
+target_sources(basic-example PRIVATE main.c)
+target_link_libraries(basic-example PRIVATE opentelemetry-c)
