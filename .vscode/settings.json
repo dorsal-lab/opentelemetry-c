@@ -1,10 +1,14 @@
 {
-    "cSpell.words": [
-        "lttng",
-        "Lttng",
-        "nostd",
-        "opentelemetry",
-        "otel",
-        "otlp"
-    ]
+  "cSpell.words": [
+    "ciena",
+    "lttng",
+    "Lttng",
+    "nostd",
+    "opentelemetry",
+    "otel",
+    "otlp",
+  ],
+  "editor.formatOnPaste": true,
+  "editor.detectIndentation": true,
+  "clang-tidy.buildPath": "build/"
 }
