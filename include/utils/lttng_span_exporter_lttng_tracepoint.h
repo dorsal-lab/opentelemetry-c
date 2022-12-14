@@ -21,29 +21,14 @@ LTTNG_UST_TRACEPOINT_EVENT(
     /* Tracepoint provider name */
     opentelemetry,
     /* Tracepoint class name */
-    otlp_recordable,
+    resource_spans,
     /* Input arguments */
-    LTTNG_UST_TP_ARGS(const char *, span, const char *, ressource, const char *,
-                      instrumentation_scope),
+    LTTNG_UST_TP_ARGS(const uint8_t *, resource_spans, unsigned int,
+                      resource_spans_size),
     /* Output event fields */
-    LTTNG_UST_TP_FIELDS(lttng_ust_field_string(
-        span_field, span) lttng_ust_field_string(ressource_field, ressource)
-                            lttng_ust_field_string(instrumentation_scope_field,
-                                                   instrumentation_scope)))
-
-LTTNG_UST_TRACEPOINT_EVENT(
-    /* Tracepoint provider name */
-    opentelemetry,
-    /* Tracepoint class name */
-    otlp_recordable_debug,
-    /* Input arguments */
-    LTTNG_UST_TP_ARGS(const char *, span, const char *, ressource, const char *,
-                      instrumentation_scope),
-    /* Output event fields */
-    LTTNG_UST_TP_FIELDS(lttng_ust_field_string(
-        span_field, span) lttng_ust_field_string(ressource_field, ressource)
-                            lttng_ust_field_string(instrumentation_scope_field,
-                                                   instrumentation_scope)))
+    LTTNG_UST_TP_FIELDS(lttng_ust_field_sequence(uint8_t, resource_spans,
+                                                 resource_spans, unsigned int,
+                                                 resource_spans_size)))
 
 #endif /* _LTTNG_SPAN_EXPORTER_LTTNG_TRACEPOINT_H */
 
