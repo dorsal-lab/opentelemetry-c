@@ -1,4 +1,4 @@
-#include "opentelemetry-c.h"
+#include "opentelemetry_c.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,9 +23,9 @@ int main() {
 	srand(0); // NOLINT
 
 	char service_name [] = "test_service";
-	char service_version [] = "test_service";
-	char service_namespace [] = "test_service";
-	char service_instance_id [] = "test_service";
+	char service_version [] = "0.0.1";
+	char service_namespace [] = "com.test";
+	char service_instance_id [] = "fake-instance-id-123456789";
 
 	init_tracing(service_name, service_version, service_namespace, service_instance_id);
 	void *tracer = get_tracer();

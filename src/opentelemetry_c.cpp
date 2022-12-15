@@ -1,4 +1,4 @@
-#include "opentelemetry-c.h"
+#include "opentelemetry_c.h"
 
 #include "utils/lttng_span_exporter.h"
 #include "utils/map.h"
@@ -7,7 +7,6 @@
 #include <opentelemetry/context/propagation/global_propagator.h>
 #include <opentelemetry/context/propagation/text_map_propagator.h>
 #include <opentelemetry/context/runtime_context.h>
-#include <opentelemetry/exporters/ostream/span_exporter.h>
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/resource/semantic_conventions.h>
 #include <opentelemetry/sdk/trace/simple_processor.h>
@@ -40,29 +39,31 @@ struct SpanAndScope {
 void init_tracing(const char *service_name, const char *service_version,
                   const char *service_namespace,
                   const char *service_instance_id) {
-	// resource::ResourceAttributes attributes = {
-	//     {resource::SemanticConventions::SERVICE_NAME, std::string(service_name)},
-	//     {resource::SemanticConventions::SERVICE_VERSION, std::string(service_version)},
-	//     {resource::SemanticConventions::SERVICE_NAMESPACE, std::string(service_namespace)},
-	//     {resource::SemanticConventions::SERVICE_INSTANCE_ID,
-	//      std::string(service_instance_id)},
-	// };
-	// auto resource = resource::Resource::Create(attributes);
+	resource::ResourceAttributes attributes = {
+	    {resource::SemanticConventions::kServiceName,
+	     std::string(service_name)},
+	    {resource::SemanticConventions::kServiceVersion,
+	     std::string(service_version)},
+	    {resource::SemanticConventions::kServiceNamespace,
+	     std::string(service_namespace)},
+	    {resource::SemanticConventions::kServiceInstanceId,
+	     std::string(service_instance_id)},
+	};
+	auto resource = resource::Resource::Create(attributes);
 	auto exporter =
 	    std::unique_ptr<trace_sdk::SpanExporter>(new LttngSpanExporter);
 	auto processor =
 	    trace_sdk::SimpleSpanProcessorFactory::Create(std::move(exporter));
 
 	std::shared_ptr<trace::TracerProvider> provider =
-	    trace_sdk::TracerProviderFactory::Create(
-	        std::move(processor) /*, resource*/);
+	    trace_sdk::TracerProviderFactory::Create(std::move(processor),
+	                                             resource);
 	// Set the global trace provider
 	trace::Provider::SetTracerProvider(provider);
 	// set global propagator
 	context::propagation::GlobalTextMapPropagator::SetGlobalPropagator(
 	    nostd::shared_ptr<context::propagation::TextMapPropagator>(
 	        new trace::propagation::HttpTraceContext()));
-
 }
 
 void *get_tracer() {

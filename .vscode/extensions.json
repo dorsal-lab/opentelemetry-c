@@ -12,7 +12,7 @@
     "ms-azuretools.vscode-docker",
     "cschlosser.doxdocgen",
     "timonwong.shellcheck",
-    "yzhang.markdown-all-in-one"
+    "yzhang.markdown-all-in-one",
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": []

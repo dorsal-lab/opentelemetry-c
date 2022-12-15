@@ -1,0 +1,38 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.0/containers/python-3
+{
+  "name": "opentelemetry-c",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  // Configure tool-specific properties.
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {},
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "austin.code-gnu-global",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools-extension-pack",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "twxs.cmake",
+        "jeff-hykin.better-cpp-syntax",
+        "ms-azuretools.vscode-docker",
+        "cschlosser.doxdocgen",
+        "timonwong.shellcheck",
+        "yzhang.markdown-all-in-one"
+      ]
+    }
+  },
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // "postCreateCommand": "pip3 install --user -r requirements.txt",
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  // "remoteUser": "vscode"
+  "workspaceMount": "source=${localWorkspaceFolder},target=/code,type=bind",
+  "workspaceFolder": "/code"
+}

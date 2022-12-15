@@ -1,7 +1,7 @@
 #ifndef SOCKET_CARRIER_H
 #define SOCKET_CARRIER_H
 
-#include "opentelemetry/context/propagation/text_map_propagator.h"
+#include <opentelemetry/context/propagation/text_map_propagator.h>
 
 class SocketTextMapCarrier
     : public opentelemetry::context::propagation::TextMapCarrier {
