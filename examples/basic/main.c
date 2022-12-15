@@ -33,6 +33,7 @@ int main() {
 	span_kind_t kind = SPAN_KIND_INTERNAL;
 	void *outer_span = start_span(tracer, "test-operation", kind, "");
 	for (int i = 0; i < 3; i++) {
+		// When creating nested span, there is no need to set the context
 		void *span = start_span(tracer, "test-operation-loop", kind, "");
 		// Sleep between 0 and 1 second
 		usleep(1000000.0F / RAND_MAX * rand()); // NOLINT

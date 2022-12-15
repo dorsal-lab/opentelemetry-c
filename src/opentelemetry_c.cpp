@@ -128,7 +128,7 @@ char *extract_context_from_current_span() {
 	return buffer;
 }
 
-void set_span_status(void *span, status_code_t code, const char *description) {
+void set_span_status(void *span, span_status_code_t code, const char *description) {
 	auto *span_and_scope = static_cast<SpanAndScope *>(span);
 	trace::StatusCode otel_code;
 	switch (code) {
