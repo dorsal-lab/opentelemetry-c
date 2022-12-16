@@ -17,18 +17,17 @@ namespace sdk_trace = opentelemetry::sdk::trace;
  */
 class LttngSpanExporter final : public sdk_trace::SpanExporter {
 public:
-    explicit LttngSpanExporter() noexcept = default;
+  explicit LttngSpanExporter() noexcept = default;
 
-    std::unique_ptr<opentelemetry::sdk::trace::Recordable>
-    MakeRecordable() noexcept override;
+  std::unique_ptr<opentelemetry::sdk::trace::Recordable>
+  MakeRecordable() noexcept override;
 
-    opentelemetry::sdk::common::ExportResult
-    Export(const opentelemetry::nostd::span<
-           std::unique_ptr<opentelemetry::sdk::trace::Recordable>>
-               &spans) noexcept override;
+  opentelemetry::sdk::common::ExportResult
+  Export(const opentelemetry::nostd::span<std::unique_ptr<
+             opentelemetry::sdk::trace::Recordable>> &spans) noexcept override;
 
-    bool Shutdown(std::chrono::microseconds timeout =
-                      std::chrono::microseconds::max()) noexcept override;
+  bool Shutdown(std::chrono::microseconds timeout =
+                    std::chrono::microseconds::max()) noexcept override;
 };
 
 #endif // !LTTNG_SPAN_EXPORTER_H

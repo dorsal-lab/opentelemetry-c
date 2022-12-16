@@ -4,8 +4,8 @@ set -ex
 echo "Building all targets ..."
 
 mkdir -p build
-cmake -B build
-cmake --build build/ --config Debug --target all --
+cmake -B build -S . -D CMAKE_BUILD_TYPE=Release
+cmake --build build/ --target client-server-socket-example-client client-server-socket-example-server --
 
 echo "Starting a LTTng session ..."
 lttng create --output=ctf-traces/

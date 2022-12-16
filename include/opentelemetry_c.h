@@ -46,11 +46,11 @@ void destroy_tracer(void *tracer);
  * See https://opentelemetry.io/docs/reference/specification/trace/api/#spankind
  */
 typedef enum { // NOLINTBEGIN
-    SPAN_KIND_INTERNAL,
-    SPAN_KIND_SERVER,
-    SPAN_KIND_CLIENT,
-    SPAN_KIND_PRODUCER,
-    SPAN_KIND_CONSUMER
+  SPAN_KIND_INTERNAL,
+  SPAN_KIND_SERVER,
+  SPAN_KIND_CLIENT,
+  SPAN_KIND_PRODUCER,
+  SPAN_KIND_CONSUMER
 } span_kind_t; // NOLINTEND
 
 /**
@@ -89,9 +89,9 @@ char *extract_context_from_current_span();
  * https://opentelemetry.io/docs/reference/specification/trace/api/#set-status
  */
 typedef enum { // NOLINTBEGIN
-    SPAN_STATUS_CODE_UNSET,
-    SPAN_STATUS_CODE_OK,
-    SPAN_STATUS_CODE_ERROR
+  SPAN_STATUS_CODE_UNSET,
+  SPAN_STATUS_CODE_OK,
+  SPAN_STATUS_CODE_ERROR
 } span_status_code_t; // NOLINTEND
 
 /**
