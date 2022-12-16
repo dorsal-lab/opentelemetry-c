@@ -6,21 +6,21 @@ SocketTextMapCarrier::SocketTextMapCarrier(const std::string &context)
 
 opentelemetry::nostd::string_view SocketTextMapCarrier::Get(
     opentelemetry::nostd::string_view key) const noexcept {
-	std::string key_to_compare = key.data();
-	auto it = context_map_.find(key_to_compare);
-	if (it != context_map_.end()) {
-		return it->second;
-	}
-	return "";
+    std::string key_to_compare = key.data();
+    auto it = context_map_.find(key_to_compare);
+    if (it != context_map_.end()) {
+        return it->second;
+    }
+    return "";
 }
 
 void SocketTextMapCarrier::Set(
     opentelemetry::nostd::string_view key,
     opentelemetry::nostd::string_view value) noexcept {
-	context_map_.insert(std::pair<std::string, std::string>(
-	    std::string(key), std::string(value)));
+    context_map_.insert(std::pair<std::string, std::string>(
+        std::string(key), std::string(value)));
 }
 
 std::string SocketTextMapCarrier::Serialize() const noexcept {
-	return serialize_map(context_map_);
+    return serialize_map(context_map_);
 }

@@ -3,13 +3,13 @@
 
 #undef LTTNG_UST_TRACEPOINT_INCLUDE
 #define LTTNG_UST_TRACEPOINT_INCLUDE                                           \
-	"./utils/lttng_span_exporter_lttng_tracepoint.h"
+    "./utils/lttng_span_exporter_lttng_tracepoint.h"
 
 #if !defined(_LTTNG_SPAN_EXPORTER_LTTNG_TRACEPOINT_H) ||                       \
     defined(LTTNG_UST_TRACEPOINT_HEADER_MULTI_READ)
-#	define _LTTNG_SPAN_EXPORTER_LTTNG_TRACEPOINT_H
+#define _LTTNG_SPAN_EXPORTER_LTTNG_TRACEPOINT_H
 
-#	include <lttng/tracepoint.h>
+#include <lttng/tracepoint.h>
 
 /*
  * Use LTTNG_UST_TRACEPOINT_EVENT(), LTTNG_UST_TRACEPOINT_EVENT_CLASS(),

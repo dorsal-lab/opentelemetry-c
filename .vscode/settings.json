@@ -8,7 +8,6 @@
     "otel",
     "otlp",
   ],
-  "editor.formatOnPaste": true,
-  "editor.detectIndentation": true,
-  "clang-tidy.buildPath": "build/"
+  "clang-tidy.buildPath": "build/",
+  "editor.detectIndentation": true
 }

@@ -95,6 +95,8 @@ RUN cd opentelemetry-cpp &&\
 	make -j $(nproc) &&\
 	make install
 
+RUN ldconfig
+
 WORKDIR /code
 COPY . .
 

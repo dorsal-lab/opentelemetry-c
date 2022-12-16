@@ -15,14 +15,15 @@
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
         "austin.code-gnu-global",
+        "cschlosser.doxdocgen",
+        "jeff-hykin.better-cpp-syntax",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-azuretools.vscode-docker",
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools-extension-pack",
-        "llvm-vs-code-extensions.vscode-clangd",
-        "twxs.cmake",
-        "jeff-hykin.better-cpp-syntax",
-        "ms-azuretools.vscode-docker",
-        "cschlosser.doxdocgen",
+        "streetsidesoftware.code-spell-checker",
         "timonwong.shellcheck",
+        "twxs.cmake",
         "yzhang.markdown-all-in-one"
       ]
     }

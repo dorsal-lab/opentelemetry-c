@@ -24,14 +24,14 @@ void init_tracing(const char *service_name, const char *service_version,
 /**
  * @brief Get the tracer object
  * The tracer object help in the future to create spans
- * 
- * @return void* 
+ *
+ * @return void*
  */
 void *get_tracer();
 
 /**
- * @brief Desallocate all ressources used by the tracer
- * 
+ * @brief Deallocate all resources used by the tracer
+ *
  * @param tracer The tracer we want to destroy
  */
 void destroy_tracer(void *tracer);
@@ -46,11 +46,11 @@ void destroy_tracer(void *tracer);
  * See https://opentelemetry.io/docs/reference/specification/trace/api/#spankind
  */
 typedef enum { // NOLINTBEGIN
-	SPAN_KIND_INTERNAL,
-	SPAN_KIND_SERVER,
-	SPAN_KIND_CLIENT,
-	SPAN_KIND_PRODUCER,
-	SPAN_KIND_CONSUMER
+    SPAN_KIND_INTERNAL,
+    SPAN_KIND_SERVER,
+    SPAN_KIND_CLIENT,
+    SPAN_KIND_PRODUCER,
+    SPAN_KIND_CONSUMER
 } span_kind_t; // NOLINTEND
 
 /**
@@ -68,8 +68,16 @@ void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
 
 /**
  * @brief Extract the context from the current active span
- * Use this method to pass context arround requests
- * 
+ *
+ * Use this method to get the context to pass around requests
+ *
+ * The function allocates memory for the return value. This memory must be freed
+ * later.
+ *
+ * For now the context is a string. In future, it could be in a
+ * binary format (See
+ * https://github.com/open-telemetry/opentelemetry-specification/issues/437)
+ *
  * @return char* The context serialized
  */
 char *extract_context_from_current_span();
@@ -81,23 +89,25 @@ char *extract_context_from_current_span();
  * https://opentelemetry.io/docs/reference/specification/trace/api/#set-status
  */
 typedef enum { // NOLINTBEGIN
-	SPAN_STATUS_CODE_UNSET,
-	SPAN_STATUS_CODE_OK,
-	SPAN_STATUS_CODE_ERROR
+    SPAN_STATUS_CODE_UNSET,
+    SPAN_STATUS_CODE_OK,
+    SPAN_STATUS_CODE_ERROR
 } span_status_code_t; // NOLINTEND
 
 /**
  * @brief Set the status of an span
- * 
+ *
  * @param span The span
  * @param code The status code
- * @param description A description. The description matters only for the error status code
+ * @param description A description. The description matters only for the error
+ * status code
  */
-void set_span_status(void *span, span_status_code_t code, const char *description);
+void set_span_status(void *span, span_status_code_t code,
+                     const char *description);
 
 /**
- * @brief Ends a desallocated memory relating to a span
- * 
+ * @brief Ends a deallocated memory relating to a span
+ *
  * @param span The span we want to end
  */
 void end_span(void *span);
