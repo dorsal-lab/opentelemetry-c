@@ -1,4 +1,3 @@
-#include "context.h"
 #include "zhelpers.h"
 
 #include <opentelemetry_c.h>
@@ -22,14 +21,15 @@ int main(void) {
 
   int request_nbr;
   for (request_nbr = 0; request_nbr != 5; request_nbr++) {
-    char *client_message_and_context = s_recv(responder);
-    char *message, *context;
-    split_message_and_context(client_message_and_context, &message, &context);
+    char *context = s_recv(responder);
     void *span =
         start_span(tracer, "get-hello-response", SPAN_KIND_SERVER, context);
 
-    printf("Received from client: %s\n", message);
-    free(client_message_and_context);
+    char *message = s_recv(responder);
+    printf("[server] Received context from client: %s\n", context);
+    printf("[server] Received from client: %s\n", message);
+    free(context);
+    free(message);
     sleep(1); //  Do some "work"
     // We decide to not add any context on response.
     // In this example, context is useful only when we start a span
