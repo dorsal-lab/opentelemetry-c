@@ -6,7 +6,6 @@
 #include <string.h>
 #include <zmq.h>
 
-static const int DEFAULT_BUFFER_SIZE = 1024;
 
 // Receive 0MQ string from socket and convert into C string
 // Caller must free returned string. Returns NULL if the context
@@ -15,6 +14,7 @@ static const int DEFAULT_BUFFER_SIZE = 1024;
 // for the new string.  It must be manually freed when you are done with it.
 // Failure to do so will allow a heap attack.
 static inline char *s_recv(void *socket) {
+  static const int DEFAULT_BUFFER_SIZE = 1024;
   char buffer[DEFAULT_BUFFER_SIZE];
   int size = zmq_recv(socket, buffer, DEFAULT_BUFFER_SIZE - 1, 0);
   buffer[size < DEFAULT_BUFFER_SIZE ? size : DEFAULT_BUFFER_SIZE - 1] = '\0';
