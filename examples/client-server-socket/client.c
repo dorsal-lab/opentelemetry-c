@@ -21,7 +21,7 @@ int main(void) {
   for (request_nbr = 0; request_nbr != 5; request_nbr++) {
     void *span = start_span(tracer, "get-hello", SPAN_KIND_CLIENT, "");
 
-    char *context = extract_context_from_current_span();
+    char *context = extract_context_from_current_span(span);
     s_sendmore(requester, context);
     s_send(requester, "Hello");
     free(context);

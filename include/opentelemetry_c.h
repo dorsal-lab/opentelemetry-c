@@ -60,7 +60,7 @@ typedef enum { // NOLINTBEGIN
  * @param span_name The name of the span we are creating
  * @param span_kind The SpanKind
  * @param remote_context The remote context serialized. This argument is
- * optional when creating nested spans in the same service
+ * optional when creating nested spans in the same thread
  * @return void* The span
  */
 void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
@@ -78,9 +78,10 @@ void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
  * binary format (See
  * https://github.com/open-telemetry/opentelemetry-specification/issues/437)
  *
+ * @param span The span
  * @return char* The context serialized
  */
-char *extract_context_from_current_span();
+char *extract_context_from_current_span(void *span);
 
 /**
  * @brief Define a span status

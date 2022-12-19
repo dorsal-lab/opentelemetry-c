@@ -4,6 +4,7 @@
 #include "utils/map.h"
 #include "utils/socket_carrier.h"
 
+#include <opentelemetry/context/context.h>
 #include <opentelemetry/context/propagation/global_propagator.h>
 #include <opentelemetry/context/propagation/text_map_propagator.h>
 #include <opentelemetry/context/runtime_context.h>
@@ -31,9 +32,10 @@ namespace trace_sdk = opentelemetry::sdk::trace;
 namespace nostd = opentelemetry::nostd;
 namespace resource = opentelemetry::sdk::resource;
 
-struct SpanAndScope {
+struct SpanAndContext {
   nostd::shared_ptr<trace::Span> span;
-  trace::Scope scope;
+  nostd::shared_ptr<trace::Scope> scope;
+  nostd::shared_ptr<context::Context> context;
 };
 
 void init_tracing(const char *service_name, const char *service_version,
@@ -101,29 +103,32 @@ void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
   }
   options.kind = otel_span_kind;
 
-  auto prop =
-      context::propagation::GlobalTextMapPropagator::GetGlobalPropagator();
   auto ctx = context::RuntimeContext::GetCurrent();
   // Context extraction
   if (remote_context != NULL && strcmp(remote_context, "") != 0) { // NOLINT
+    auto prop =
+        context::propagation::GlobalTextMapPropagator::GetGlobalPropagator();
     const SocketTextMapCarrier carrier((std::string(remote_context)));
-    auto new_ctx = prop->Extract(carrier, ctx);
-    options.parent = trace::GetSpan(new_ctx)->GetContext();
+    auto carrier_ctx = prop->Extract(carrier, ctx);
+    options.parent = trace::GetSpan(carrier_ctx)->GetContext();
   }
 
   // Create the span
   auto *tracer_p = static_cast<nostd::shared_ptr<trace::Tracer> *>(tracer);
   auto span = (*tracer_p)->StartSpan(span_name, options);
-  return new SpanAndScope{span, (*tracer_p)->WithActiveSpan(span)};
+  auto scope =
+      std::make_shared<trace::Scope>((*tracer_p)->WithActiveSpan(span));
+  auto new_ctx =
+      std::make_shared<context::Context>(context::RuntimeContext::GetCurrent());
+  return new SpanAndContext{span, scope, new_ctx};
 }
 
-char *extract_context_from_current_span() {
-  auto ctx = context::RuntimeContext::GetCurrent();
-  auto span = trace::GetSpan(ctx);
+char *extract_context_from_current_span(void *span) {
+  auto *span_and_context = static_cast<SpanAndContext *>(span);
   auto prop =
       context::propagation::GlobalTextMapPropagator::GetGlobalPropagator();
   SocketTextMapCarrier carrier;
-  prop->Inject(carrier, ctx);
+  prop->Inject(carrier, *(span_and_context->context));
   std::string ctx_s = carrier.Serialize();
   const auto size = ctx_s.size();
   char *buffer = new char[size + 1]; // NOLINT
@@ -133,7 +138,7 @@ char *extract_context_from_current_span() {
 
 void set_span_status(void *span, span_status_code_t code,
                      const char *description) {
-  auto *span_and_scope = static_cast<SpanAndScope *>(span);
+  auto *span_and_context = static_cast<SpanAndContext *>(span);
   trace::StatusCode otel_code;
   switch (code) {
   case SPAN_STATUS_CODE_UNSET:
@@ -148,11 +153,11 @@ void set_span_status(void *span, span_status_code_t code,
   default:
     otel_code = trace::StatusCode::kUnset;
   }
-  span_and_scope->span->SetStatus(otel_code, std::string(description));
+  span_and_context->span->SetStatus(otel_code, std::string(description));
 }
 
 void end_span(void *span) {
-  auto *span_and_scope = static_cast<SpanAndScope *>(span);
-  (*span_and_scope).span->End();
-  delete span_and_scope;
+  auto *span_and_context = static_cast<SpanAndContext *>(span);
+  (*span_and_context).span->End();
+  delete span_and_context;
 }
