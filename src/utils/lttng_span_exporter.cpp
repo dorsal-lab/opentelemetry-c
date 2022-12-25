@@ -42,16 +42,12 @@ opentelemetry::sdk::common::ExportResult LttngSpanExporter::Export(
     std::string resource_spans_str = resource_spans.SerializeAsString();
     std::size_t length = resource_spans_str.size();
 
-    auto *resource_spans_bytes = new uint8_t[length];
-    memcpy(resource_spans_bytes, resource_spans_str.c_str(), length);
-    lttng_ust_tracepoint(opentelemetry, resource_spans, resource_spans_bytes,
-                         length);
+    lttng_ust_tracepoint(opentelemetry, resource_spans,
+                         (uint8_t *)resource_spans_str.c_str(), length);
 #ifndef NDEBUG
     std::cout << "Debug resource spans :" << std::endl
               << resource_spans.DebugString() << std::endl;
 #endif // !NDEBUG
-
-    delete[] resource_spans_bytes;
   }
   return opentelemetry::sdk::common::ExportResult::kSuccess;
 }
