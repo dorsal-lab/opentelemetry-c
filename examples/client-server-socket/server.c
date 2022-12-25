@@ -39,5 +39,6 @@ int main(void) {
   }
   zmq_close(responder);
   zmq_ctx_destroy(context);
+  destroy_tracer(tracer);
   return 0;
 }

@@ -33,7 +33,9 @@ int main(void) {
 
     end_span(span);
   }
+
   zmq_close(requester);
   zmq_ctx_destroy(context);
+  destroy_tracer(tracer);
   return 0;
 }

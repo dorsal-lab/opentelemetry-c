@@ -3,36 +3,45 @@
 #ifndef Z_HELPERS_H
 #define Z_HELPERS_H
 
-#include <string.h>
 #include <zmq.h>
 
+#include <stdlib.h>
+#include <string.h>
 
 // Receive 0MQ string from socket and convert into C string
-// Caller must free returned string. Returns NULL if the context
-// is being terminated.
-// Remember that the strdup family of functions use malloc/alloc for space
-// for the new string.  It must be manually freed when you are done with it.
-// Failure to do so will allow a heap attack.
-static inline char *s_recv(void *socket) {
-  static const int DEFAULT_BUFFER_SIZE = 1024;
-  char buffer[DEFAULT_BUFFER_SIZE];
-  int size = zmq_recv(socket, buffer, DEFAULT_BUFFER_SIZE - 1, 0);
-  buffer[size < DEFAULT_BUFFER_SIZE ? size : DEFAULT_BUFFER_SIZE - 1] = '\0';
-#if (defined(WIN32))
-  return strdup(buffer);
-#else
-  return strndup(buffer, sizeof(buffer) - 1);
-#endif
+// Caller must free returned string.  Returns NULL if context is being
+// terminated.
+static char *s_recv(void *socket) {
+  zmq_msg_t message;
+  zmq_msg_init(&message);
+  int size = zmq_msg_recv(&message, socket, 0);
+  if (size == -1)
+    return NULL;
+  char *string = malloc(size + 1);
+  memcpy(string, zmq_msg_data(&message), size);
+  zmq_msg_close(&message);
+  string[size] = 0;
+  return string;
 }
 
 // Convert C string to 0MQ string and send to socket
-static inline int s_send(void *socket, char *string) {
-  return zmq_send(socket, string, strlen(string), 0);
+static int s_send(void *socket, char *string) {
+  zmq_msg_t message;
+  zmq_msg_init_size(&message, strlen(string));
+  memcpy(zmq_msg_data(&message), string, strlen(string));
+  int size = zmq_msg_send(&message, socket, 0);
+  zmq_msg_close(&message);
+  return size;
 }
 
 // Sends string as 0MQ string, as multipart non-terminal
-static inline int s_sendmore(void *socket, char *string) {
-  return zmq_send(socket, string, strlen(string), ZMQ_SNDMORE);
+static int s_sendmore(void *socket, char *string) {
+  zmq_msg_t message;
+  zmq_msg_init_size(&message, strlen(string));
+  memcpy(zmq_msg_data(&message), string, strlen(string));
+  int size = zmq_msg_send(&message, socket, ZMQ_SNDMORE);
+  zmq_msg_close(&message);
+  return size;
 }
 
 #endif // !Z_HELPERS_H

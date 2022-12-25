@@ -31,18 +31,39 @@ int main() {
                service_instance_id);
   void *tracer = get_tracer();
 
-  span_kind_t kind = SPAN_KIND_INTERNAL;
-  void *outer_span = start_span(tracer, "test-operation", kind, "");
+  void *outer_span =
+      start_span(tracer, "test-operation", SPAN_KIND_INTERNAL, "");
   for (int i = 0; i < 3; i++) {
-    // When creating nested span, there is no need to set the context
-    void *span = start_span(tracer, "test-operation-loop", kind, "");
-    // Sleep between 0 and 1 second
+    // Create a nested span
+    // When creating nested span in the same thread, there is no need to set the
+    // context
+    void *span =
+        start_span(tracer, "test-operation-loop", SPAN_KIND_INTERNAL, "");
+    // Set a attribute for the loop iteration number
+    void *map = create_attr_map();
+    set_int32_t_attr(map, "loop-no", i);
+    set_span_attrs(span, map);
+    destroy_attr_map(map);
+    // We log an event that will mark the beginning of the work
+    map = create_attr_map();
+    set_str_attr(map, "message", "Work started");
+    add_span_event(span, "work_start", map);
+    destroy_attr_map(map);
+    // The work : Sleep between 0 and 1 second
     usleep(1000000.0F / RAND_MAX * rand()); // NOLINT
+    // We log an event that will mark the end of the work
+    map = create_attr_map();
+    set_str_attr(map, "message", "Work ended");
+    add_span_event(span, "work_end", map);
+    destroy_attr_map(map);
+    // Set the span status (optional)
+    // Start the span
     set_span_status(span, SPAN_STATUS_CODE_OK, "");
     end_span(span);
   }
   end_span(outer_span);
 
+  destroy_tracer(tracer);
   printf("Basic example ends ...!\n");
   return 0;
 }

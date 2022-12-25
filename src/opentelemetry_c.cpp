@@ -4,6 +4,7 @@
 #include "utils/map.h"
 #include "utils/socket_carrier.h"
 
+#include <opentelemetry/common/attribute_value.h>
 #include <opentelemetry/context/context.h>
 #include <opentelemetry/context/propagation/global_propagator.h>
 #include <opentelemetry/context/propagation/text_map_propagator.h>
@@ -31,6 +32,8 @@ namespace trace = opentelemetry::trace;
 namespace trace_sdk = opentelemetry::sdk::trace;
 namespace nostd = opentelemetry::nostd;
 namespace resource = opentelemetry::sdk::resource;
+
+using AttrMap = std::map<std::string, opentelemetry::common::AttributeValue>;
 
 struct SpanAndContext {
   nostd::shared_ptr<trace::Span> span;
@@ -74,6 +77,36 @@ void *get_tracer() {
 
 void destroy_tracer(void *tracer) {
   delete static_cast<nostd::shared_ptr<trace::Tracer> *>(tracer);
+}
+
+void *create_attr_map() { return new AttrMap; }
+
+void set_bool_attr(void *attr_map, char *key, int boolean_value) {
+  (*static_cast<AttrMap *>(attr_map))[key] = !!boolean_value;
+}
+
+void set_int32_t_attr(void *attr_map, char *key, int32_t value) {
+  (*static_cast<AttrMap *>(attr_map))[key] = value;
+}
+
+void set_int64_t_attr(void *attr_map, char *key, int64_t value) {
+  (*static_cast<AttrMap *>(attr_map))[key] = value;
+}
+
+void set_uint64_t_attr(void *attr_map, char *key, uint64_t value) {
+  (*static_cast<AttrMap *>(attr_map))[key] = value;
+}
+
+void set_double_attr(void *attr_map, char *key, double value) {
+  (*static_cast<AttrMap *>(attr_map))[key] = value;
+}
+
+void set_str_attr(void *attr_map, char *key, char *value) {
+  (*static_cast<AttrMap *>(attr_map))[key] = value;
+}
+
+void destroy_attr_map(void *attr_map) {
+  delete static_cast<AttrMap *>(attr_map);
 }
 
 void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
@@ -154,6 +187,20 @@ void set_span_status(void *span, span_status_code_t code,
     otel_code = trace::StatusCode::kUnset;
   }
   span_and_context->span->SetStatus(otel_code, std::string(description));
+}
+
+void set_span_attrs(void *span, void *attr_map) {
+  auto *span_and_context = static_cast<SpanAndContext *>(span);
+  auto *attr_map_p = static_cast<AttrMap *>(attr_map);
+  for (auto const &map_entry : *attr_map_p) {
+    span_and_context->span->SetAttribute(map_entry.first, map_entry.second);
+  }
+}
+
+void add_span_event(void *span, char *event_name, void *attr_map) {
+  auto *span_and_context = static_cast<SpanAndContext *>(span);
+  auto *attr_map_p = static_cast<AttrMap *>(attr_map);
+  span_and_context->span->AddEvent(event_name, *attr_map_p);
 }
 
 void end_span(void *span) {

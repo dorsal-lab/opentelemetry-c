@@ -1,6 +1,8 @@
 #ifndef OPENTELEMETRY_C_H
 #define OPENTELEMETRY_C_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,6 +37,49 @@ void *get_tracer();
  * @param tracer The tracer we want to destroy
  */
 void destroy_tracer(void *tracer);
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes map
+//////////////////////////////////////////////////////////////////////////
+
+void *create_attr_map();
+/**
+ * @brief Create a map of attribute (std::map<std::string,
+ * opentelemetry::common::AttributeValue>).
+ *
+ * See https://opentelemetry.io/docs/reference/specification/common/#attribute
+ */
+void set_bool_attr(void *attr_map, char *key, int boolean_value);
+
+/**
+ * See https://opentelemetry.io/docs/reference/specification/common/#attribute
+ */
+void set_int32_t_attr(void *attr_map, char *key, int32_t value);
+
+/**
+ * See https://opentelemetry.io/docs/reference/specification/common/#attribute
+ */
+void set_int64_t_attr(void *attr_map, char *key, int64_t value);
+
+/**
+ * See https://opentelemetry.io/docs/reference/specification/common/#attribute
+ */
+void set_uint64_t_attr(void *attr_map, char *key, uint64_t value);
+
+/**
+ * See https://opentelemetry.io/docs/reference/specification/common/#attribute
+ */
+void set_double_attr(void *attr_map, char *key, double value);
+
+/**
+ * See https://opentelemetry.io/docs/reference/specification/common/#attribute
+ */
+void set_str_attr(void *attr_map, char *key, char *value);
+
+/**
+ * @brief Deallocate map memory
+ */
+void destroy_attr_map(void *attr_map);
 
 //////////////////////////////////////////////////////////////////////////
 // Spans
@@ -105,6 +150,23 @@ typedef enum { // NOLINTBEGIN
  */
 void set_span_status(void *span, span_status_code_t code,
                      const char *description);
+
+/**
+ * @brief Set the span attributes
+ *
+ * @param span The span
+ * @param attr_map The map with all attributes
+ */
+void set_span_attrs(void *span, void *attr_map);
+
+/**
+ * @brief Add a span event
+ *
+ * @param span The span
+ * @param event_name The event name
+ * @param attr_map The map with all event attributes
+ */
+void add_span_event(void *span, char *event_name, void *attr_map);
 
 /**
  * @brief Ends a deallocated memory relating to a span
