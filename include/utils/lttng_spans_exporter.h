@@ -1,5 +1,5 @@
-#ifndef LTTNG_SPAN_EXPORTER_H
-#define LTTNG_SPAN_EXPORTER_H
+#ifndef LTTNG_SPANS_EXPORTER_H
+#define LTTNG_SPANS_EXPORTER_H
 
 #include <opentelemetry/nostd/type_traits.h>
 #include <opentelemetry/sdk/trace/exporter.h>
@@ -30,4 +30,4 @@ public:
                     std::chrono::microseconds::max()) noexcept override;
 };
 
-#endif // !LTTNG_SPAN_EXPORTER_H
+#endif // !LTTNG_SPANS_EXPORTER_H

@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 int main(void) {
-  init_tracing("client-server-socket-example-server", "0.0.1", "",
+  init_tracing_provider("client-server-socket-example-server", "0.0.1", "",
                "machine-server-0.0.1");
   void *tracer = get_tracer();
 

@@ -1,0 +1,5 @@
+project(up-down-counter C)
+set(CMAKE_C_STANDARD 11)
+add_executable(up-down-counter)
+target_sources(up-down-counter PRIVATE main.c)
+target_link_libraries(up-down-counter PRIVATE opentelemetry-c)

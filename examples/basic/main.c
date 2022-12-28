@@ -27,7 +27,7 @@ int main() {
   char service_namespace[] = "com.test";
   char service_instance_id[] = "fake-instance-id-123456789";
 
-  init_tracing(service_name, service_version, service_namespace,
+  init_tracing_provider(service_name, service_version, service_namespace,
                service_instance_id);
   void *tracer = get_tracer();
 

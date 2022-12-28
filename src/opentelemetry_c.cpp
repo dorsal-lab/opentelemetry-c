@@ -1,6 +1,7 @@
 #include "opentelemetry_c.h"
 
-#include "utils/lttng_span_exporter.h"
+#include "utils/lttng_metrics_exporter.h"
+#include "utils/lttng_spans_exporter.h"
 #include "utils/map.h"
 #include "utils/socket_carrier.h"
 
@@ -9,7 +10,17 @@
 #include <opentelemetry/context/propagation/global_propagator.h>
 #include <opentelemetry/context/propagation/text_map_propagator.h>
 #include <opentelemetry/context/runtime_context.h>
+#include <opentelemetry/exporters/ostream/metric_exporter.h>
+#include <opentelemetry/metrics/async_instruments.h>
+#include <opentelemetry/metrics/provider.h>
 #include <opentelemetry/nostd/shared_ptr.h>
+#include <opentelemetry/sdk/metrics/aggregation/default_aggregation.h>
+#include <opentelemetry/sdk/metrics/aggregation/histogram_aggregation.h>
+#include <opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader.h>
+#include <opentelemetry/sdk/metrics/meter.h>
+#include <opentelemetry/sdk/metrics/meter_provider.h>
+#include <opentelemetry/sdk/metrics/metric_reader.h>
+#include <opentelemetry/sdk/metrics/push_metric_exporter.h>
 #include <opentelemetry/sdk/resource/semantic_conventions.h>
 #include <opentelemetry/sdk/trace/simple_processor.h>
 #include <opentelemetry/sdk/trace/simple_processor_factory.h>
@@ -28,10 +39,12 @@
 #include <string>
 
 namespace context = opentelemetry::context;
-namespace trace = opentelemetry::trace;
-namespace trace_sdk = opentelemetry::sdk::trace;
+namespace metric_sdk = opentelemetry::sdk::metrics;
+namespace metrics_api = opentelemetry::metrics;
 namespace nostd = opentelemetry::nostd;
 namespace resource = opentelemetry::sdk::resource;
+namespace trace = opentelemetry::trace;
+namespace trace_sdk = opentelemetry::sdk::trace;
 
 using AttrMap = std::map<std::string, opentelemetry::common::AttributeValue>;
 
@@ -41,9 +54,10 @@ struct SpanAndContext {
   nostd::shared_ptr<context::Context> context;
 };
 
-void init_tracing(const char *service_name, const char *service_version,
-                  const char *service_namespace,
-                  const char *service_instance_id) {
+void init_tracing_provider(const char *service_name,
+                           const char *service_version,
+                           const char *service_namespace,
+                           const char *service_instance_id) {
   resource::ResourceAttributes attributes = {
       {resource::SemanticConventions::kServiceName, std::string(service_name)},
       {resource::SemanticConventions::kServiceVersion,
@@ -207,4 +221,61 @@ void end_span(void *span) {
   auto *span_and_context = static_cast<SpanAndContext *>(span);
   (*span_and_context).span->End();
   delete span_and_context;
+}
+
+void *create_metrics_provider(int64_t export_interval_millis,
+                              int64_t export_timeout_millis) {
+  std::unique_ptr<metric_sdk::PushMetricExporter> exporter{
+      new LttngMetricsExporter};
+  auto provider = std::shared_ptr<metrics_api::MeterProvider>(
+      new metric_sdk::MeterProvider());
+  metric_sdk::PeriodicExportingMetricReaderOptions options;
+  options.export_interval_millis =
+      std::chrono::milliseconds(export_interval_millis);
+  options.export_timeout_millis =
+      std::chrono::milliseconds(export_timeout_millis);
+  std::unique_ptr<metric_sdk::MetricReader> reader{
+      new metric_sdk::PeriodicExportingMetricReader(std::move(exporter),
+                                                    options)};
+  auto provider_p =
+      std::static_pointer_cast<metric_sdk::MeterProvider>(provider);
+  provider_p->AddMetricReader(std::move(reader));
+  metrics_api::Provider::SetMeterProvider(provider);
+  return new std::shared_ptr<metric_sdk::MeterProvider>(provider_p);
+}
+
+void *create_int64_up_down_counter(void *provider, char *name,
+                                   char *description) {
+  auto p = *static_cast<std::shared_ptr<metric_sdk::MeterProvider> *>(provider);
+  // up down counter view
+  std::string counter_name = std::string(name) + "_counter";
+  std::unique_ptr<metric_sdk::InstrumentSelector> instrument_selector{
+      new metric_sdk::InstrumentSelector(
+          metric_sdk::InstrumentType::kUpDownCounter, counter_name)};
+  std::unique_ptr<metric_sdk::MeterSelector> meter_selector{
+      new metric_sdk::MeterSelector(name, "1.2.0",
+                                    "https://opentelemetry.io/schemas/1.2.0")};
+  std::unique_ptr<metric_sdk::View> sum_view{new metric_sdk::View{
+      name, description, metric_sdk::AggregationType::kSum}};
+  p->AddView(std::move(instrument_selector), std::move(meter_selector),
+             std::move(sum_view));
+  // up down counter
+  auto meter = p->GetMeter(name, "1.2.0");
+  return new nostd::unique_ptr<metrics_api::UpDownCounter<int64_t>>(
+      meter->CreateInt64UpDownCounter(counter_name, description));
+}
+
+void up_down_counter_add(void *counter, int64_t value) {
+  static_cast<nostd::unique_ptr<metrics_api::UpDownCounter<int64_t>> *>(counter)
+      ->get()
+      ->Add(value, context::RuntimeContext::GetCurrent());
+}
+
+void destroy_up_down_counter(void *counter) {
+  delete static_cast<nostd::unique_ptr<metrics_api::UpDownCounter<int64_t>> *>(
+      counter);
+}
+
+void destroy_metrics_provider(void *provider) {
+  delete static_cast<std::shared_ptr<metric_sdk::MeterProvider> *>(provider);
 }

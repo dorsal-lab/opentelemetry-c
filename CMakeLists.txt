@@ -18,8 +18,10 @@ target_link_libraries(opentelemetry-c PRIVATE
 
 target_include_directories(opentelemetry-c PUBLIC include)
 target_sources(opentelemetry-c PRIVATE
-	src/opentelemetry_c.cpp
-    src/utils/lttng_span_exporter.cpp
+    src/opentelemetry_c.cpp
+    src/utils/lttng_metrics_exporter.cpp
+    src/utils/lttng_opentelemetry_exporter_tracepoints.cpp
+    src/utils/lttng_spans_exporter.cpp
     src/utils/map.cpp
     src/utils/socket_carrier.cpp)
 
