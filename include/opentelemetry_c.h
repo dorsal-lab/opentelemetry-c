@@ -19,10 +19,9 @@ extern "C" {
  * @param service_namespace The service namespace
  * @param service_instance_id The host instance id
  */
-void init_tracing_provider(const char *service_name,
-                           const char *service_version,
-                           const char *service_namespace,
-                           const char *service_instance_id);
+void init_tracer_provider(const char *service_name, const char *service_version,
+                          const char *service_namespace,
+                          const char *service_instance_id);
 
 /**
  * @brief Get the tracer object
@@ -179,13 +178,17 @@ void end_span(void *span);
 //////////////////////////////////////////////////////////////////////////
 // Metrics
 //////////////////////////////////////////////////////////////////////////
-void *create_metrics_provider(int64_t export_interval_millis,
-                              int64_t export_timeout_millis);
-void *create_int64_up_down_counter(void *provider, char *name,
-                                   char *description);
-void up_down_counter_add(void *counter, int64_t value);
+void init_metrics_provider(int64_t export_interval_millis,
+                           int64_t export_timeout_millis);
+
+void *create_int64_up_down_counter(char *name, char *description);
+void int64_up_down_counter_add(void *counter, int64_t value);
 void destroy_up_down_counter(void *counter);
-void destroy_metrics_provider(void *provider);
+
+void *create_int64_observable_up_down_counter(char *name, char *description);
+void int64_observable_up_down_counter_add_callback(void *counter,
+                                                   int64_t (*callback)());
+void destroy_observable_up_down_counter(void *counter);
 
 #ifdef __cplusplus
 }

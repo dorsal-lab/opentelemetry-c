@@ -8,7 +8,7 @@
 #include <string.h>
 
 int main(void) {
-  init_tracing_provider("client-server-socket-example-client", "0.0.1", "",
+  init_tracer_provider("client-server-socket-example-client", "0.0.1", "",
                "machine-client-0.0.1");
   void *tracer = get_tracer();
 

@@ -54,10 +54,9 @@ struct SpanAndContext {
   nostd::shared_ptr<context::Context> context;
 };
 
-void init_tracing_provider(const char *service_name,
-                           const char *service_version,
-                           const char *service_namespace,
-                           const char *service_instance_id) {
+void init_tracer_provider(const char *service_name, const char *service_version,
+                          const char *service_namespace,
+                          const char *service_instance_id) {
   resource::ResourceAttributes attributes = {
       {resource::SemanticConventions::kServiceName, std::string(service_name)},
       {resource::SemanticConventions::kServiceVersion,
@@ -223,8 +222,8 @@ void end_span(void *span) {
   delete span_and_context;
 }
 
-void *create_metrics_provider(int64_t export_interval_millis,
-                              int64_t export_timeout_millis) {
+void init_metrics_provider(int64_t export_interval_millis,
+                           int64_t export_timeout_millis) {
   std::unique_ptr<metric_sdk::PushMetricExporter> exporter{
       new LttngMetricsExporter};
   auto provider = std::shared_ptr<metrics_api::MeterProvider>(
@@ -241,12 +240,11 @@ void *create_metrics_provider(int64_t export_interval_millis,
       std::static_pointer_cast<metric_sdk::MeterProvider>(provider);
   provider_p->AddMetricReader(std::move(reader));
   metrics_api::Provider::SetMeterProvider(provider);
-  return new std::shared_ptr<metric_sdk::MeterProvider>(provider_p);
 }
 
-void *create_int64_up_down_counter(void *provider, char *name,
-                                   char *description) {
-  auto p = *static_cast<std::shared_ptr<metric_sdk::MeterProvider> *>(provider);
+void *create_int64_up_down_counter(char *name, char *description) {
+  auto provider = metrics_api::Provider::GetMeterProvider();
+  auto p = static_cast<metric_sdk::MeterProvider *>(provider.get());
   // up down counter view
   std::string counter_name = std::string(name) + "_counter";
   std::unique_ptr<metric_sdk::InstrumentSelector> instrument_selector{
@@ -265,7 +263,7 @@ void *create_int64_up_down_counter(void *provider, char *name,
       meter->CreateInt64UpDownCounter(counter_name, description));
 }
 
-void up_down_counter_add(void *counter, int64_t value) {
+void int64_up_down_counter_add(void *counter, int64_t value) {
   static_cast<nostd::unique_ptr<metrics_api::UpDownCounter<int64_t>> *>(counter)
       ->get()
       ->Add(value, context::RuntimeContext::GetCurrent());
@@ -276,6 +274,52 @@ void destroy_up_down_counter(void *counter) {
       counter);
 }
 
-void destroy_metrics_provider(void *provider) {
-  delete static_cast<std::shared_ptr<metric_sdk::MeterProvider> *>(provider);
+void *create_int64_observable_up_down_counter(char *name, char *description) {
+  auto provider = metrics_api::Provider::GetMeterProvider();
+  auto p = static_cast<metric_sdk::MeterProvider *>(provider.get());
+  // up down counter view
+  std::string observable_counter_name =
+      std::string(name) + "_observable_counter";
+  std::unique_ptr<metric_sdk::InstrumentSelector> instrument_selector{
+      new metric_sdk::InstrumentSelector(
+          metric_sdk::InstrumentType::kObservableUpDownCounter,
+          observable_counter_name)};
+  std::unique_ptr<metric_sdk::MeterSelector> meter_selector{
+      new metric_sdk::MeterSelector(name, "1.2.0",
+                                    "https://opentelemetry.io/schemas/1.2.0")};
+  std::unique_ptr<metric_sdk::View> sum_view{new metric_sdk::View{
+      name, description, metric_sdk::AggregationType::kSum}};
+  p->AddView(std::move(instrument_selector), std::move(meter_selector),
+             std::move(sum_view));
+  // up down counter
+  auto meter = p->GetMeter(name, "1.2.0");
+  return new nostd::shared_ptr<metrics_api::ObservableInstrument>(
+      meter->CreateInt64ObservableUpDownCounter(observable_counter_name,
+                                                description));
+}
+
+template <typename T>
+static void counter_observable_fetcher(
+    opentelemetry::metrics::ObserverResult observer_result, void *callback) {
+  if (nostd::holds_alternative<
+          nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<T>>>(
+          observer_result)) {
+    auto callback_f = (T(*)(void))callback;
+    T value = (*callback_f)();
+    nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<T>>>(
+        observer_result)
+        ->Observe(value);
+  }
+}
+
+void int64_observable_up_down_counter_add_callback(void *counter,
+                                                   int64_t (*callback)()) {
+  static_cast<nostd::shared_ptr<metrics_api::ObservableInstrument> *>(counter)
+      ->get()
+      ->AddCallback(counter_observable_fetcher<int64_t>, (void *)callback);
+}
+
+void destroy_observable_up_down_counter(void *counter) {
+  delete static_cast<nostd::shared_ptr<metrics_api::ObservableInstrument> *>(
+      counter);
 }

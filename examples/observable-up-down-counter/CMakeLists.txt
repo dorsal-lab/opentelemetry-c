@@ -1,0 +1,5 @@
+project(observable-up-down-counter C)
+set(CMAKE_C_STANDARD 11)
+add_executable(observable-up-down-counter)
+target_sources(observable-up-down-counter PRIVATE main.c)
+target_link_libraries(observable-up-down-counter PRIVATE opentelemetry-c)
