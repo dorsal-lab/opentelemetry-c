@@ -312,8 +312,8 @@ static void counter_observable_fetcher(
   }
 }
 
-void int64_observable_up_down_counter_add_callback(void *counter,
-                                                   int64_t (*callback)()) {
+void int64_observable_up_down_counter_register_callback(void *counter,
+                                                        int64_t (*callback)()) {
   static_cast<nostd::shared_ptr<metrics_api::ObservableInstrument> *>(counter)
       ->get()
       ->AddCallback(counter_observable_fetcher<int64_t>, (void *)callback);

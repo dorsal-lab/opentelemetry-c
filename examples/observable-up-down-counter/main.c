@@ -24,7 +24,7 @@ int main() {
   void *counter = create_int64_observable_up_down_counter(
       "n_active_requests", "Simple counter to keep track of the number of "
                            "active requests in the system");
-  int64_observable_up_down_counter_add_callback(counter, &counter_callback);
+  int64_observable_up_down_counter_register_callback(counter, &counter_callback);
   sleep(5); // Give time to counter to call callback few times
   destroy_observable_up_down_counter(counter);
   printf("Observable Up Down Counter Basic example ends ...!\n");

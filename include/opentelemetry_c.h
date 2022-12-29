@@ -12,7 +12,12 @@ extern "C" {
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Initialize the tracing environment
+ * @brief Initialize the tracer provider and context propagator
+ *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/trace/api/#tracerprovider
+ * and
+ * https://opentelemetry.io/docs/reference/specification/context/api-propagators/#textmap-propagator
  *
  * @param service_name The name of the service we are tracing
  * @param service_version The version of the service
@@ -26,6 +31,9 @@ void init_tracer_provider(const char *service_name, const char *service_version,
 /**
  * @brief Get the tracer object
  * The tracer object help in the future to create spans
+ *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/trace/api/#tracer
  *
  * @return void*
  */
@@ -101,6 +109,9 @@ typedef enum { // NOLINTBEGIN
 /**
  * @brief Create a new span
  *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/trace/api/#span-creation
+ *
  * @param tracer The tracer
  * @param span_name The name of the span we are creating
  * @param span_kind The SpanKind
@@ -143,6 +154,9 @@ typedef enum { // NOLINTBEGIN
 /**
  * @brief Set the status of an span
  *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/trace/api/#span-operations
+ *
  * @param span The span
  * @param code The status code
  * @param description A description. The description matters only for the error
@@ -154,6 +168,9 @@ void set_span_status(void *span, span_status_code_t code,
 /**
  * @brief Set the span attributes
  *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/trace/api/#span-operations
+ *
  * @param span The span
  * @param attr_map The map with all attributes
  */
@@ -161,6 +178,9 @@ void set_span_attrs(void *span, void *attr_map);
 
 /**
  * @brief Add a span event
+ *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/trace/api/#span-operations
  *
  * @param span The span
  * @param event_name The event name
@@ -178,16 +198,82 @@ void end_span(void *span);
 //////////////////////////////////////////////////////////////////////////
 // Metrics
 //////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Initialize the Meter Provider and Meter reader
+ *
+ * Read more on
+ * https://opentelemetry.io/docs/reference/specification/metrics/sdk/#meterprovider
+ * and
+ * https://opentelemetry.io/docs/reference/specification/metrics/sdk/#metricreader
+ *
+ * @param export_interval_millis The time interval in milliseconds between two
+ * consecutive exports
+ * @param export_timeout_millis How long the export can run before it is
+ * cancelled
+ */
 void init_metrics_provider(int64_t export_interval_millis,
                            int64_t export_timeout_millis);
 
+/**
+ * @brief Create a int64 up down counter
+ *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/metrics/api/#updowncounter
+ *
+ * @param name Counter name
+ * @param description A description of what the counter does
+ * @return void* The counter
+ */
 void *create_int64_up_down_counter(char *name, char *description);
+
+/**
+ * @brief Increment or decrement the UpDownCounter by a fixed amount
+ *
+ * https://opentelemetry.io/docs/reference/specification/metrics/api/#add-1
+ *
+ * @param counter The counter
+ * @param value The increment or decrement
+ */
 void int64_up_down_counter_add(void *counter, int64_t value);
+
+/**
+ * @brief Deallocate all resources used by the counter
+ *
+ * @param counter The counter
+ */
 void destroy_up_down_counter(void *counter);
 
+/**
+ * @brief Create a int64 asynchronous up down counter
+ *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/metrics/api/#asynchronous-updowncounter
+ *
+ * @param name Counter name
+ * @param description A description of what the counter does
+ * @return void* The counter
+ */
 void *create_int64_observable_up_down_counter(char *name, char *description);
-void int64_observable_up_down_counter_add_callback(void *counter,
-                                                   int64_t (*callback)());
+
+/**
+ * @brief Register an asynchronous up down counter callback
+ *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/metrics/api/#asynchronous-updowncounter-operations
+ *
+ * @param counter The counter
+ * @param callback The callback is a function returning the increment to apply
+ * to the counter
+ */
+void int64_observable_up_down_counter_register_callback(void *counter,
+                                                        int64_t (*callback)());
+
+/**
+ * @brief Deallocate all resources used by the counter
+ *
+ * @param counter The counter
+ */
 void destroy_observable_up_down_counter(void *counter);
 
 #ifdef __cplusplus
