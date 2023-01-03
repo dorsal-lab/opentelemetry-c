@@ -6,17 +6,32 @@
 #include "utils/lttng_opentelemetry_exporter_tracepoints.h"
 
 #include <opentelemetry/exporters/otlp/otlp_metric_utils.h>
+#include <opentelemetry/sdk_config.h>
+#include <opentelemetry/exporters/otlp/otlp_grpc_metric_exporter_options.h>
 
 #include <iostream>
 
 namespace metrics_sdk = opentelemetry::sdk::metrics;
 
+LttngMetricsExporter::LttngMetricsExporter()
+    : LttngMetricsExporter(
+          opentelemetry::exporter::otlp::OtlpGrpcMetricExporterOptions()) {}
+
 LttngMetricsExporter::LttngMetricsExporter(
-    metrics_sdk::AggregationTemporality aggregation_temporality) noexcept
-    : aggregation_temporality_(aggregation_temporality){};
+    const opentelemetry::exporter::otlp::OtlpGrpcMetricExporterOptions &options)
+    : options_(options), aggregation_temporality_selector_{
+                             opentelemetry::exporter::otlp::OtlpMetricUtils::
+                                 ChooseTemporalitySelector(
+                                     options_.aggregation_temporality)} {}
 
 opentelemetry::sdk::common::ExportResult LttngMetricsExporter::Export(
     const metrics_sdk::ResourceMetrics &data) noexcept {
+  if (isShutdown()) {
+    OTEL_INTERNAL_LOG_ERROR("[OTLP METRICS gRPC] Exporting "
+                            << data.scope_metric_data_.size()
+                            << " metric(s) failed, exporter is shutdown")
+    return opentelemetry::sdk::common::ExportResult::kFailure;
+  }
   if (data.scope_metric_data_.empty()) {
     return opentelemetry::sdk::common::ExportResult::kSuccess;
   }
@@ -24,9 +39,8 @@ opentelemetry::sdk::common::ExportResult LttngMetricsExporter::Export(
       request;
   opentelemetry::exporter::otlp::OtlpMetricUtils::PopulateRequest(data,
                                                                   &request);
-
   for (int i = 0; i < request.resource_metrics_size(); i++) {
-    auto resource_metrics = request.resource_metrics(i);
+    const auto &resource_metrics = request.resource_metrics(i);
     auto resource_metrics_str = resource_metrics.SerializeAsString();
     lttng_ust_tracepoint(opentelemetry, resource_metrics,
                          (uint8_t *)resource_metrics_str.c_str(),
@@ -38,20 +52,20 @@ opentelemetry::sdk::common::ExportResult LttngMetricsExporter::Export(
   }
 
   return opentelemetry::sdk::common::ExportResult::kSuccess;
-};
+}
 
 metrics_sdk::AggregationTemporality
 LttngMetricsExporter::GetAggregationTemporality(
     metrics_sdk::InstrumentType instrument_type) const noexcept {
-  return aggregation_temporality_;
-};
+  return aggregation_temporality_selector_(instrument_type);
+}
 
 bool LttngMetricsExporter::ForceFlush(
     std::chrono::microseconds /*timeout =
         (std::chrono::microseconds::max)()*/) noexcept {
   const std::lock_guard<opentelemetry::common::SpinLockMutex> locked(lock_);
   return true;
-};
+}
 
 bool LttngMetricsExporter::Shutdown(
     std::chrono::microseconds /*timeout =
@@ -59,7 +73,7 @@ bool LttngMetricsExporter::Shutdown(
   const std::lock_guard<opentelemetry::common::SpinLockMutex> locked(lock_);
   is_shutdown_ = true;
   return true;
-};
+}
 
 bool LttngMetricsExporter::isShutdown() const noexcept {
   const std::lock_guard<opentelemetry::common::SpinLockMutex> locked(lock_);

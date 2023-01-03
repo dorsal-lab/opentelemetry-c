@@ -2,7 +2,6 @@
 
 #include "utils/lttng_metrics_exporter.h"
 #include "utils/lttng_spans_exporter.h"
-#include "utils/map.h"
 #include "utils/socket_carrier.h"
 
 #include <opentelemetry/common/attribute_value.h>
@@ -10,21 +9,16 @@
 #include <opentelemetry/context/propagation/global_propagator.h>
 #include <opentelemetry/context/propagation/text_map_propagator.h>
 #include <opentelemetry/context/runtime_context.h>
-#include <opentelemetry/exporters/ostream/metric_exporter.h>
 #include <opentelemetry/metrics/async_instruments.h>
 #include <opentelemetry/metrics/provider.h>
 #include <opentelemetry/nostd/shared_ptr.h>
-#include <opentelemetry/sdk/metrics/aggregation/default_aggregation.h>
-#include <opentelemetry/sdk/metrics/aggregation/histogram_aggregation.h>
 #include <opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader.h>
 #include <opentelemetry/sdk/metrics/meter.h>
 #include <opentelemetry/sdk/metrics/meter_provider.h>
 #include <opentelemetry/sdk/metrics/metric_reader.h>
 #include <opentelemetry/sdk/metrics/push_metric_exporter.h>
 #include <opentelemetry/sdk/resource/semantic_conventions.h>
-#include <opentelemetry/sdk/trace/simple_processor.h>
 #include <opentelemetry/sdk/trace/simple_processor_factory.h>
-#include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/sdk/trace/tracer_provider_factory.h>
 #include <opentelemetry/trace/context.h>
 #include <opentelemetry/trace/propagation/http_trace_context.h>
@@ -35,6 +29,7 @@
 #include <opentelemetry/trace/tracer.h>
 
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -94,27 +89,27 @@ void destroy_tracer(void *tracer) {
 
 void *create_attr_map() { return new AttrMap; }
 
-void set_bool_attr(void *attr_map, char *key, int boolean_value) {
+void set_bool_attr(void *attr_map, const char *key, int boolean_value) {
   (*static_cast<AttrMap *>(attr_map))[key] = !!boolean_value;
 }
 
-void set_int32_t_attr(void *attr_map, char *key, int32_t value) {
+void set_int32_t_attr(void *attr_map, const char *key, int32_t value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void set_int64_t_attr(void *attr_map, char *key, int64_t value) {
+void set_int64_t_attr(void *attr_map, const char *key, int64_t value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void set_uint64_t_attr(void *attr_map, char *key, uint64_t value) {
+void set_uint64_t_attr(void *attr_map, const char *key, uint64_t value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void set_double_attr(void *attr_map, char *key, double value) {
+void set_double_attr(void *attr_map, const char *key, double value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void set_str_attr(void *attr_map, char *key, char *value) {
+void set_str_attr(void *attr_map, const char *key, const char *value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
@@ -210,7 +205,7 @@ void set_span_attrs(void *span, void *attr_map) {
   }
 }
 
-void add_span_event(void *span, char *event_name, void *attr_map) {
+void add_span_event(void *span, const char *event_name, void *attr_map) {
   auto *span_and_context = static_cast<SpanAndContext *>(span);
   auto *attr_map_p = static_cast<AttrMap *>(attr_map);
   span_and_context->span->AddEvent(event_name, *attr_map_p);
@@ -222,12 +217,28 @@ void end_span(void *span) {
   delete span_and_context;
 }
 
-void init_metrics_provider(int64_t export_interval_millis,
+void init_metrics_provider(const char *service_name,
+                           const char *service_version,
+                           const char *service_namespace,
+                           const char *service_instance_id,
+                           int64_t export_interval_millis,
                            int64_t export_timeout_millis) {
+  resource::ResourceAttributes attributes = {
+      {resource::SemanticConventions::kServiceName, std::string(service_name)},
+      {resource::SemanticConventions::kServiceVersion,
+       std::string(service_version)},
+      {resource::SemanticConventions::kServiceNamespace,
+       std::string(service_namespace)},
+      {resource::SemanticConventions::kServiceInstanceId,
+       std::string(service_instance_id)},
+  };
+  auto resource = resource::Resource::Create(attributes);
+
   std::unique_ptr<metric_sdk::PushMetricExporter> exporter{
       new LttngMetricsExporter};
-  auto provider = std::shared_ptr<metrics_api::MeterProvider>(
-      new metric_sdk::MeterProvider());
+  auto provider =
+      std::shared_ptr<metrics_api::MeterProvider>(new metric_sdk::MeterProvider(
+          std::make_unique<metrics_sdk::ViewRegistry>(), resource));
   metric_sdk::PeriodicExportingMetricReaderOptions options;
   options.export_interval_millis =
       std::chrono::milliseconds(export_interval_millis);
@@ -242,11 +253,11 @@ void init_metrics_provider(int64_t export_interval_millis,
   metrics_api::Provider::SetMeterProvider(provider);
 }
 
-void *create_int64_up_down_counter(char *name, char *description) {
+void *create_int64_up_down_counter(const char *name, const char *description) {
   auto provider = metrics_api::Provider::GetMeterProvider();
-  auto p = static_cast<metric_sdk::MeterProvider *>(provider.get());
+  auto p = dynamic_cast<metric_sdk::MeterProvider *>(provider.get());
   // up down counter view
-  std::string counter_name = std::string(name) + "_counter";
+  std::string counter_name = std::string(name) + "_up_down_counter";
   std::unique_ptr<metric_sdk::InstrumentSelector> instrument_selector{
       new metric_sdk::InstrumentSelector(
           metric_sdk::InstrumentType::kUpDownCounter, counter_name)};
@@ -274,12 +285,13 @@ void destroy_up_down_counter(void *counter) {
       counter);
 }
 
-void *create_int64_observable_up_down_counter(char *name, char *description) {
+void *create_int64_observable_up_down_counter(const char *name,
+                                              const char *description) {
   auto provider = metrics_api::Provider::GetMeterProvider();
-  auto p = static_cast<metric_sdk::MeterProvider *>(provider.get());
+  auto p = dynamic_cast<metric_sdk::MeterProvider *>(provider.get());
   // up down counter view
   std::string observable_counter_name =
-      std::string(name) + "_observable_counter";
+      std::string(name) + "_observable_up_down_counter";
   std::unique_ptr<metric_sdk::InstrumentSelector> instrument_selector{
       new metric_sdk::InstrumentSelector(
           metric_sdk::InstrumentType::kObservableUpDownCounter,
@@ -304,7 +316,7 @@ static void counter_observable_fetcher(
   if (nostd::holds_alternative<
           nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<T>>>(
           observer_result)) {
-    auto callback_f = (T(*)(void))callback;
+    auto callback_f = (T(*)())callback;
     T value = (*callback_f)();
     nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<T>>>(
         observer_result)

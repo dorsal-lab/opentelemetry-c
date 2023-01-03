@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
 
-# Setup vcpkg script with CMake (note: should be placed before project() call)
 project(opentelemetry-c)
 
 find_package(LTTngUST REQUIRED)
@@ -23,7 +22,8 @@ target_sources(opentelemetry-c PRIVATE
     src/utils/lttng_opentelemetry_exporter_tracepoints.cpp
     src/utils/lttng_spans_exporter.cpp
     src/utils/map.cpp
-    src/utils/socket_carrier.cpp)
+    src/utils/socket_carrier.cpp
+)
 
 # Include examples
 option(BUILD_EXAMPLES "Whether to build examples or not" ON)

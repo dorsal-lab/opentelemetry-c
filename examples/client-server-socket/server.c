@@ -21,14 +21,15 @@ int main(void) {
 
   int request_nbr;
   for (request_nbr = 0; request_nbr != 5; request_nbr++) {
-    char *context = s_recv(responder);
+    char *remote_context = s_recv(responder);
     void *span =
-        start_span(tracer, "get-hello-response", SPAN_KIND_SERVER, context);
+        start_span(tracer, "get-hello-response", SPAN_KIND_SERVER,
+                            remote_context);
 
     char *message = s_recv(responder);
-    printf("[server] Received context from client: %s\n", context);
+    printf("[server] Received context from client: %s\n", remote_context);
     printf("[server] Received from client: %s\n", message);
-    free(context);
+    free(remote_context);
     free(message);
     sleep(1); //  Do some "work"
     // We decide to not add any context on response.

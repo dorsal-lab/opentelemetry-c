@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 int main(void) {
   init_tracer_provider("client-server-socket-example-client", "0.0.1", "",
@@ -21,10 +20,10 @@ int main(void) {
   for (request_nbr = 0; request_nbr != 5; request_nbr++) {
     void *span = start_span(tracer, "get-hello", SPAN_KIND_CLIENT, "");
 
-    char *context = extract_context_from_current_span(span);
-    s_sendmore(requester, context);
+    char *remote_context = extract_context_from_current_span(span);
+    s_sendmore(requester, remote_context);
     s_send(requester, "Hello");
-    free(context);
+    free(remote_context);
     // We decide to not add any context on response.
     // In this example, context is useful only when we start a span
     char *server_response = s_recv(requester);

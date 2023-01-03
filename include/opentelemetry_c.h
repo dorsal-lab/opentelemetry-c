@@ -57,32 +57,32 @@ void *create_attr_map();
  *
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_bool_attr(void *attr_map, char *key, int boolean_value);
+void set_bool_attr(void *attr_map, const char *key, int boolean_value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_int32_t_attr(void *attr_map, char *key, int32_t value);
+void set_int32_t_attr(void *attr_map, const char *key, int32_t value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_int64_t_attr(void *attr_map, char *key, int64_t value);
+void set_int64_t_attr(void *attr_map, const char *key, int64_t value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_uint64_t_attr(void *attr_map, char *key, uint64_t value);
+void set_uint64_t_attr(void *attr_map, const char *key, uint64_t value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_double_attr(void *attr_map, char *key, double value);
+void set_double_attr(void *attr_map, const char *key, double value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_str_attr(void *attr_map, char *key, char *value);
+void set_str_attr(void *attr_map, const char *key, const char *value);
 
 /**
  * @brief Deallocate map memory
@@ -186,7 +186,7 @@ void set_span_attrs(void *span, void *attr_map);
  * @param event_name The event name
  * @param attr_map The map with all event attributes
  */
-void add_span_event(void *span, char *event_name, void *attr_map);
+void add_span_event(void *span, const char *event_name, void *attr_map);
 
 /**
  * @brief Ends a deallocated memory relating to a span
@@ -207,12 +207,20 @@ void end_span(void *span);
  * and
  * https://opentelemetry.io/docs/reference/specification/metrics/sdk/#metricreader
  *
+ * @param service_name The name of the service we are tracing
+ * @param service_version The version of the service
+ * @param service_namespace The service namespace
+ * @param service_instance_id The host instance id
  * @param export_interval_millis The time interval in milliseconds between two
  * consecutive exports
  * @param export_timeout_millis How long the export can run before it is
  * cancelled
  */
-void init_metrics_provider(int64_t export_interval_millis,
+void init_metrics_provider(const char *service_name,
+                           const char *service_version,
+                           const char *service_namespace,
+                           const char *service_instance_id,
+                           int64_t export_interval_millis,
                            int64_t export_timeout_millis);
 
 /**
@@ -225,7 +233,7 @@ void init_metrics_provider(int64_t export_interval_millis,
  * @param description A description of what the counter does
  * @return void* The counter
  */
-void *create_int64_up_down_counter(char *name, char *description);
+void *create_int64_up_down_counter(const char *name, const char *description);
 
 /**
  * @brief Increment or decrement the UpDownCounter by a fixed amount
@@ -254,7 +262,8 @@ void destroy_up_down_counter(void *counter);
  * @param description A description of what the counter does
  * @return void* The counter
  */
-void *create_int64_observable_up_down_counter(char *name, char *description);
+void *create_int64_observable_up_down_counter(const char *name,
+                                              const char *description);
 
 /**
  * @brief Register an asynchronous up down counter callback

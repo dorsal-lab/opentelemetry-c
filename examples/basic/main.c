@@ -22,13 +22,8 @@ int main() {
 
   srand(0); // NOLINT
 
-  char service_name[] = "test_service";
-  char service_version[] = "0.0.1";
-  char service_namespace[] = "com.test";
-  char service_instance_id[] = "fake-instance-id-123456789";
-
-  init_tracer_provider(service_name, service_version, service_namespace,
-               service_instance_id);
+  init_tracer_provider("test_service", "0.0.1", "com.test",
+                       "fake-instance-id-123456789");
   void *tracer = get_tracer();
 
   void *outer_span =

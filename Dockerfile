@@ -100,4 +100,4 @@ RUN ldconfig
 WORKDIR /code
 COPY . .
 
-CMD ./run-basic-example.sh
+CMD ./run.sh basic

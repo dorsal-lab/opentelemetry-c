@@ -17,12 +17,12 @@
         "austin.code-gnu-global",
         "cschlosser.doxdocgen",
         "jeff-hykin.better-cpp-syntax",
+        "lizebang.bash-extension-pack",
         "llvm-vs-code-extensions.vscode-clangd",
         "ms-azuretools.vscode-docker",
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools-extension-pack",
         "streetsidesoftware.code-spell-checker",
-        "timonwong.shellcheck",
         "twxs.cmake",
         "yzhang.markdown-all-in-one"
       ]

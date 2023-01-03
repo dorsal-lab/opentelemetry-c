@@ -2,6 +2,7 @@
 #define LTTNG_METRICS_EXPORTER_H
 
 #include <opentelemetry/common/spin_lock_mutex.h>
+#include <opentelemetry/exporters/otlp/otlp_grpc_metric_exporter_options.h>
 #include <opentelemetry/sdk/metrics/push_metric_exporter.h>
 
 namespace metrics_sdk = opentelemetry::sdk::metrics;
@@ -9,15 +10,14 @@ namespace metrics_sdk = opentelemetry::sdk::metrics;
 class LttngMetricsExporter final : public metrics_sdk::PushMetricExporter {
 public:
   /**
-   * Create an LttngMetricsExporter
+   * Create an LttngMetricsExporter using all default options.
    */
-  explicit LttngMetricsExporter() noexcept = default;
+  LttngMetricsExporter();
 
   /**
-   * Create an LttngMetricsExporter
+   * Create an LttngMetricsExporter using the given options.
    */
-  explicit LttngMetricsExporter(
-      metrics_sdk::AggregationTemporality aggregation_temporality) noexcept;
+  explicit LttngMetricsExporter(const opentelemetry::exporter::otlp::OtlpGrpcMetricExporterOptions &options);
 
   /**
    * Export
@@ -49,7 +49,10 @@ public:
                     (std::chrono::microseconds::max)()) noexcept override;
 
 private:
-  metrics_sdk::AggregationTemporality aggregation_temporality_;
+  // The configuration options associated with this exporter.
+  const opentelemetry::exporter::otlp::OtlpGrpcMetricExporterOptions options_;
+  // Aggregation Temporality selector
+  const opentelemetry::sdk::metrics::AggregationTemporalitySelector aggregation_temporality_selector_;
   bool is_shutdown_ = false;
   mutable opentelemetry::common::SpinLockMutex lock_;
 
