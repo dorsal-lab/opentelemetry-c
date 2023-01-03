@@ -27,7 +27,7 @@ basic | up-down-counter | observable-up-down-counter)
     lttng stop
 
     echo "View traces ..."
-    lttng view
+    lttng view | sed 's/\(.\{400\}\).*/\1.../'
 
     echo "Destroying LTTng session ..."
     lttng destroy
@@ -60,7 +60,7 @@ client-server-socket)
     lttng stop
 
     echo "View traces ..."
-    lttng view
+    lttng view | sed 's/\(.\{400\}\).*/\1.../'
 
     echo "Destroying LTTng session ..."
     lttng destroy
