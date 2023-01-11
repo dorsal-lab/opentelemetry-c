@@ -22,7 +22,7 @@ target_sources(opentelemetry-c PRIVATE
     src/utils/socket_carrier.cpp
 )
 
-option(LTTNG_EXPORTER_ENABLED "Whether to use LTTng exporter or not. If set to off, OTLP GRPC default exporter will be used" OFF)
+option(LTTNG_EXPORTER_ENABLED "Whether to use LTTng exporter or not. If set to off, OTLP GRPC default exporter will be used" ON)
 if (LTTNG_EXPORTER_ENABLED)
     target_compile_definitions(opentelemetry-c PRIVATE LTTNG_EXPORTER_ENABLED)
     target_sources(opentelemetry-c PRIVATE
