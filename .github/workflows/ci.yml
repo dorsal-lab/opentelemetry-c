@@ -72,7 +72,7 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      - name: Run the build process with Docker
+      - name: Run the docker image
         uses: addnab/docker-run-action@v3
         with:
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
