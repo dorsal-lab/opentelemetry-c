@@ -17,7 +17,7 @@ RUN apt-get install -y wget \
 	libcurl4-openssl-dev \
 	build-essential \
 	libczmq-dev \
-	linux-headers-$(uname -r) \
+	linux-headers-generic \
 	pkg-config \
 	kmod \
 	libnuma-dev \
@@ -100,4 +100,7 @@ RUN ldconfig
 WORKDIR /code
 COPY . .
 
-CMD ./run.sh basic
+CMD ./run.sh basic && \
+	./run.sh up-down-counter && \
+	./run.sh observable-up-down-counter && \
+	./run.sh client-server-socket
