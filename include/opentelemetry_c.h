@@ -274,9 +274,22 @@ void *create_int64_observable_up_down_counter(const char *name,
  * @param counter The counter
  * @param callback The callback is a function returning the increment to apply
  * to the counter
+ * @return void* The callback registration that should be use to cancel it
  */
-void int64_observable_up_down_counter_register_callback(void *counter,
-                                                        int64_t (*callback)());
+void *int64_observable_up_down_counter_register_callback(void *counter,
+                                                         int64_t (*callback)());
+
+/**
+ * @brief Cancel an asynchronous up down counter callback registration
+ *
+ * Read more on :
+ * https://opentelemetry.io/docs/reference/specification/metrics/api/#asynchronous-updowncounter-operations
+ *
+ * @param counter The counter
+ * @param registration The callback registration
+ */
+void int64_observable_up_down_counter_cancel_registration(void *counter,
+                                                           void *registration);
 
 /**
  * @brief Deallocate all resources used by the counter

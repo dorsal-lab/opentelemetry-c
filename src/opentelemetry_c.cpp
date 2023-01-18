@@ -58,6 +58,11 @@ struct SpanAndContext {
   nostd::shared_ptr<context::Context> context;
 };
 
+struct CounterCallbackRegistration {
+  metrics_api::ObservableCallbackPtr callback;
+  void *state;
+};
+
 void init_tracer_provider(const char *service_name, const char *service_version,
                           const char *service_namespace,
                           const char *service_instance_id) {
@@ -342,11 +347,28 @@ static void counter_observable_fetcher(
   }
 }
 
-void int64_observable_up_down_counter_register_callback(void *counter,
-                                                        int64_t (*callback)()) {
+void *
+int64_observable_up_down_counter_register_callback(void *counter,
+                                                   int64_t (*callback)()) {
+  metrics_api::ObservableCallbackPtr counter_callback =
+      counter_observable_fetcher<int64_t>;
+  auto counter_state = (void *)callback;
   static_cast<nostd::shared_ptr<metrics_api::ObservableInstrument> *>(counter)
       ->get()
-      ->AddCallback(counter_observable_fetcher<int64_t>, (void *)callback);
+      ->AddCallback(counter_callback, counter_state);
+  return new CounterCallbackRegistration{counter_callback, counter_state};
+}
+
+void int64_observable_up_down_counter_cancel_registration(void *counter,
+                                                          void *registration) {
+  auto counter_p =
+      static_cast<nostd::shared_ptr<metrics_api::ObservableInstrument> *>(
+          counter);
+  auto registration_p =
+      static_cast<CounterCallbackRegistration *>(registration);
+  counter_p->get()->RemoveCallback(registration_p->callback,
+                                   registration_p->state);
+  delete registration_p;
 }
 
 void destroy_observable_up_down_counter(void *counter) {
