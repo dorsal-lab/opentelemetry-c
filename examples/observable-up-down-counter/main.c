@@ -29,10 +29,9 @@ int main() {
                            "active requests in the system");
   void *registration = int64_observable_up_down_counter_register_callback(
       counter, &counter_callback);
-  sleep(5); // Give time to counter to call callback few times
+  sleep(60); // Give time to counter to call callback few times
   int64_observable_up_down_counter_cancel_registration(counter, registration);
   destroy_observable_up_down_counter(counter);
-  sleep(5);
   printf("Observable Up Down Counter Basic example ends ...!\n");
   return 0;
 }
