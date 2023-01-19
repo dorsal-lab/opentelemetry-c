@@ -11,29 +11,30 @@ find_package(opentelemetry-cpp CONFIG REQUIRED)
 add_library(opentelemetry-c STATIC)
 target_include_directories(opentelemetry-c PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
 target_link_libraries(opentelemetry-c PRIVATE
-	${OPENTELEMETRY_CPP_LIBRARIES}
-    lttng-ust
-    dl)
+        ${OPENTELEMETRY_CPP_LIBRARIES}
+        lttng-ust
+        dl
+        )
 
 target_include_directories(opentelemetry-c PUBLIC include)
 target_sources(opentelemetry-c PRIVATE
-    src/opentelemetry_c.cpp
-    src/utils/map.cpp
-    src/utils/socket_carrier.cpp
-)
+        src/opentelemetry_c.cpp
+        src/utils/map.cpp
+        src/utils/socket_carrier.cpp
+        )
 
 option(LTTNG_EXPORTER_ENABLED "Whether to use LTTng exporter or not. If set to off, OTLP GRPC default exporter will be used" ON)
 if (LTTNG_EXPORTER_ENABLED)
     target_compile_definitions(opentelemetry-c PRIVATE LTTNG_EXPORTER_ENABLED)
     target_sources(opentelemetry-c PRIVATE
-        src/utils/lttng_metrics_exporter.cpp
-        src/utils/lttng_opentelemetry_exporter_tracepoints.cpp
-        src/utils/lttng_spans_exporter.cpp
-    )
-endif()
+            src/utils/lttng_metrics_exporter.cpp
+            src/utils/lttng_opentelemetry_exporter_tracepoints.cpp
+            src/utils/lttng_spans_exporter.cpp
+            )
+endif ()
 
 # Include examples
-option(BUILD_EXAMPLES "Whether to build examples or not" ON)
+option(BUILD_EXAMPLES "Whether to build examples or not" OFF)
 if (BUILD_EXAMPLES)
-	add_subdirectory(examples)
-endif()
+    add_subdirectory(examples)
+endif ()
