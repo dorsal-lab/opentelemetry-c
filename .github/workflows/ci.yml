@@ -37,7 +37,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.repository_id }}-${{ hashFiles('**/*Dockerfile*') }}
+          key: ${{ runner.os }}-buildx-${{ github.repository_id }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.repository_id }}-
 
