@@ -16,6 +16,11 @@ target_link_libraries(opentelemetry-c PRIVATE
         dl
         )
 
+option(BATCH_SPAN_PROCESSOR_ENABLED "Whether to use Batching Span Processor or Simple Span Processor" OFF)
+if (BATCH_SPAN_PROCESSOR_ENABLED)
+    target_compile_definitions(opentelemetry-c PRIVATE BATCH_SPAN_PROCESSOR_ENABLED)
+endif ()
+
 target_include_directories(opentelemetry-c PUBLIC include)
 target_sources(opentelemetry-c PRIVATE
         src/opentelemetry_c.cpp

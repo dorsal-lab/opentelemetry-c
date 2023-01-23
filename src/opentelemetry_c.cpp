@@ -27,7 +27,11 @@
 #include <opentelemetry/sdk/metrics/metric_reader.h>
 #include <opentelemetry/sdk/metrics/push_metric_exporter.h>
 #include <opentelemetry/sdk/resource/semantic_conventions.h>
+#ifdef BATCH_SPAN_PROCESSOR_ENABLED
+#include <opentelemetry/sdk/trace/batch_span_processor_factory.h>
+#else
 #include <opentelemetry/sdk/trace/simple_processor_factory.h>
+#endif
 #include <opentelemetry/sdk/trace/tracer_provider_factory.h>
 #include <opentelemetry/trace/context.h>
 #include <opentelemetry/trace/propagation/http_trace_context.h>
@@ -83,8 +87,13 @@ void init_tracer_provider(const char *service_name, const char *service_version,
   auto exporter = std::unique_ptr<trace_sdk::SpanExporter>(
       new opentelemetry::exporter::otlp::OtlpGrpcExporter);
 #endif // LTTNG_EXPORTER_ENABLED
+#ifdef BATCH_SPAN_PROCESSOR_ENABLED
+  auto processor =
+      trace_sdk::BatchSpanProcessorFactory::Create(std::move(exporter), {});
+#else
   auto processor =
       trace_sdk::SimpleSpanProcessorFactory::Create(std::move(exporter));
+#endif // BATCH_SPAN_PROCESSOR_ENABLED
 
   std::shared_ptr<trace::TracerProvider> provider =
       trace_sdk::TracerProviderFactory::Create(std::move(processor), resource);
