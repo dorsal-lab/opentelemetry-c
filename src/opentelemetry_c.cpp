@@ -88,8 +88,19 @@ void init_tracer_provider(const char *service_name, const char *service_version,
       new opentelemetry::exporter::otlp::OtlpGrpcExporter);
 #endif // LTTNG_EXPORTER_ENABLED
 #ifdef BATCH_SPAN_PROCESSOR_ENABLED
+  trace_sdk::BatchSpanProcessorOptions opts;
+#ifdef BATCH_SPAN_PROCESSOR_MAX_QUEUE_SIZE
+  opts.max_export_batch_size = BATCH_SPAN_PROCESSOR_MAX_QUEUE_SIZE;
+#endif
+#ifdef BATCH_SPAN_PROCESSOR_SCHEDULE_DELAY_MILLIS
+  opts.schedule_delay_millis =
+      std::chrono::milliseconds(BATCH_SPAN_PROCESSOR_SCHEDULE_DELAY_MILLIS);
+#endif
+#ifdef BATCH_SPAN_PROCESSOR_MAX_EXPORT_BATCH_SIZE
+  opts.max_export_batch_size = BATCH_SPAN_PROCESSOR_MAX_EXPORT_BATCH_SIZE;
+#endif
   auto processor =
-      trace_sdk::BatchSpanProcessorFactory::Create(std::move(exporter), {});
+      trace_sdk::BatchSpanProcessorFactory::Create(std::move(exporter), opts);
 #else
   auto processor =
       trace_sdk::SimpleSpanProcessorFactory::Create(std::move(exporter));
