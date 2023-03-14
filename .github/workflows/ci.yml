@@ -50,16 +50,19 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_NAME }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-#      - name: Run examples
-#        uses: addnab/docker-run-action@v3
-#        with:
-#          image: ${{ env.IMAGE_NAME }}:latest
-#          run: |
-#            ./run.sh basic
-#            ./run.sh up-down-counter
-#            ./run.sh observable-up-down-counter
-#            ./run.sh client-server-socket
+      - name: Run examples
+        uses: addnab/docker-run-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          image: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          run: |
+            ./run.sh basic
+            ./run.sh up-down-counter
+            ./run.sh observable-up-down-counter
+            ./run.sh client-server-socket
