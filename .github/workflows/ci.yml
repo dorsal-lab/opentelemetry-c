@@ -60,7 +60,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          image: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
           run: |
             ./run.sh basic
             ./run.sh up-down-counter
