@@ -97,7 +97,7 @@ RUN cd opentelemetry-cpp &&\
 
 RUN ldconfig
 
-WORKDIR /code
+WORKDIR /tmp/opentelemetry-c
 COPY . .
 RUN mkdir -p build &&\
     cd build &&\
@@ -108,7 +108,4 @@ RUN mkdir -p build &&\
     make -j $(nproc) &&\
     make install
 
-#CMD ./run.sh basic && \
-#	./run.sh up-down-counter && \
-#	./run.sh observable-up-down-counter && \
-#	./run.sh client-server-socket
+WORKDIR /
