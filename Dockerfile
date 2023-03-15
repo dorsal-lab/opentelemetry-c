@@ -108,4 +108,7 @@ RUN mkdir -p build &&\
     make -j $(nproc) &&\
     make install
 
-WORKDIR /
+CMD ./run.sh basic && \
+	./run.sh up-down-counter && \
+	./run.sh observable-up-down-counter && \
+	./run.sh client-server-socket
