@@ -17,6 +17,60 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  lttng-otelcpp-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      output1: ${{ steps.filter.outputs.workflows }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            workflows:
+              - 'lttng-otelcpp.Dockerfile'
+
+      - name: workflow tests
+        if: steps.filter.outputs.workflows == 'true'
+        run: echo "Workflow file"
+
+      - name: Set up Docker Buildx
+        if: steps.filter.outputs.workflows == 'true'
+        uses: docker/setup-buildx-action@v2.5.0
+
+      - name: Log in to the Container registry
+        if: steps.filter.outputs.workflows == 'true'
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        if: steps.filter.outputs.workflows == 'true'
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/lttng-otelcpp
+
+      - name: Build and push Docker image
+        if: steps.filter.outputs.workflows == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: lttng-otelcpp.Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/lttng-otelcpp:cache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/lttng-otelcpp:cache,mode=max
+
   build-push-run-image:
     runs-on: ubuntu-latest
 
@@ -44,7 +98,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      # Use gha cache when building : https://docs.docker.com/build/cache/backends/gha/
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
