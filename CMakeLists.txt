@@ -63,5 +63,5 @@ install(TARGETS ${PROJECT_NAME} EXPORT "${PROJECT_NAME}-target"
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(DIRECTORY include/
-        DESTINATION include/opentelemetry-c
+        DESTINATION include/opentelemetry_c
         FILES_MATCHING PATTERN "*.h")
