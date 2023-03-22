@@ -96,3 +96,4 @@ RUN cd opentelemetry-cpp &&\
 	make install
 
 RUN ldconfig
+
