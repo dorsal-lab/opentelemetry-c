@@ -1,5 +1,5 @@
-#include "utils/socket_carrier.h"
-#include "utils/map.h"
+#include "opentelemetry_c/utils/socket_carrier.h"
+#include "opentelemetry_c/utils/map.h"
 
 SocketTextMapCarrier::SocketTextMapCarrier(const std::string &context)
     : context_map_(deserialize_map(context)) {}

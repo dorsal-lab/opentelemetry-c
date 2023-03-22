@@ -1,6 +1,6 @@
 #include <string>
 
-#include "utils/map.h"
+#include "opentelemetry_c/utils/map.h"
 
 std::size_t read_size(const std::string &s, std::size_t &index) {
   std::string buffer;

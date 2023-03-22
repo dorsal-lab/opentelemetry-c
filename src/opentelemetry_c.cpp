@@ -1,14 +1,14 @@
-#include "opentelemetry_c.h"
+#include "opentelemetry_c/opentelemetry_c.h"
 #ifndef LTTNG_EXPORTER_ENABLED
 #include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
 #include <opentelemetry/exporters/otlp/otlp_grpc_metric_exporter_options.h>
 #endif // LTTNG_EXPORTER_ENABLED
 
 #ifdef LTTNG_EXPORTER_ENABLED
-#include "utils/lttng_metrics_exporter.h"
-#include "utils/lttng_spans_exporter.h"
+#include "opentelemetry_c/utils/lttng_metrics_exporter.h"
+#include "opentelemetry_c/utils/lttng_spans_exporter.h"
 #endif // LTTNG_EXPORTER_ENABLED
-#include "utils/socket_carrier.h"
+#include "opentelemetry_c/utils/socket_carrier.h"
 
 #include <opentelemetry/common/attribute_value.h>
 #include <opentelemetry/context/context.h>

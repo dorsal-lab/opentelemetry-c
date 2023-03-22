@@ -2,8 +2,8 @@
 // between Abseil library and OpenTelemetry C++ absl::variant implementation
 #include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
 
-#include "utils/lttng_metrics_exporter.h"
-#include "utils/lttng_opentelemetry_exporter_tracepoints.h"
+#include "opentelemetry_c/utils/lttng_metrics_exporter.h"
+#include "opentelemetry_c/utils/lttng_opentelemetry_exporter_tracepoints.h"
 
 #include <opentelemetry/exporters/otlp/otlp_metric_utils.h>
 #include <opentelemetry/sdk_config.h>

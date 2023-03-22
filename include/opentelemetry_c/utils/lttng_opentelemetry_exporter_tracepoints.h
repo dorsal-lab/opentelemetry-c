@@ -3,7 +3,7 @@
 
 #undef LTTNG_UST_TRACEPOINT_INCLUDE
 #define LTTNG_UST_TRACEPOINT_INCLUDE                                           \
-  "./utils/lttng_opentelemetry_exporter_tracepoints.h"
+  "./opentelemetry_c/utils/lttng_opentelemetry_exporter_tracepoints.h"
 
 #if !defined(_LTTNG_OPENTELEMETRY_EXPORTER_TRACEPOINTS_H) ||                   \
     defined(LTTNG_UST_TRACEPOINT_HEADER_MULTI_READ)

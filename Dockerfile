@@ -6,7 +6,7 @@ WORKDIR /tmp/opentelemetry-c
 COPY . .
 RUN mkdir -p build &&\
     cd build &&\
-    cmake -DWITH_EXAMPLES=OFF \
+    cmake -DBUILD_EXAMPLES=OFF \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=/usr/local/ \
         .. &&\

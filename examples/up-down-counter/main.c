@@ -1,4 +1,4 @@
-#include "opentelemetry_c.h"
+#include <opentelemetry_c/opentelemetry_c.h>
 
 #include <stdio.h>
 #include <stdlib.h>
