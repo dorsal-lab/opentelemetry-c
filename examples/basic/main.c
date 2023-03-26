@@ -34,7 +34,7 @@ int main() {
     // context
     void *span =
         start_span(tracer, "test-operation-loop", SPAN_KIND_INTERNAL, "");
-    // Set a attribute for the loop iteration number
+    // Set an attribute for the loop iteration number
     void *map = create_attr_map();
     set_int32_t_attr(map, "loop-no", i);
     set_span_attrs(span, map);
