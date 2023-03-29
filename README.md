@@ -197,6 +197,27 @@ void *otelc_get_tracer();
 void otelc_destroy_tracer(void *tracer);
 ```
 
+Here is an example of usage of these functions :
+
+```C
+#include <opentelemetry_c/opentelemetry_c.h>
+
+int main() {
+  otelc_init_tracer_provider(
+          "service_name", 
+          "1.0.0", 
+          "service_namespace", 
+          "host_instance_id");
+  void *tracer = otelc_get_tracer();
+
+  // Use the tracer to create spans
+  // ...
+  
+  otelc_destroy_tracer(tracer);
+  return 0;
+}
+```
+
 ### Attributes map
 
 The following functions are available to create, modify, and destroy an attribute map:
@@ -240,6 +261,20 @@ void otelc_set_str_attr(void *attr_map, const char *key, const char *value);
  * @brief Deallocate map memory
  */
 void otelc_destroy_attr_map(void *attr_map);
+```
+
+Here is an example of usage of these functions :
+
+```C
+#include <opentelemetry_c/opentelemetry_c.h>
+
+int main() {
+  map = otelc_create_attr_map();
+  otelc_set_str_attr(map, "message", "Work started");
+  otelc_add_span_event(span, "work_start", map);
+  otelc_destroy_attr_map(map);
+  return 0;
+}
 ```
 
 ### Spans
@@ -350,6 +385,70 @@ void otelc_add_span_event(void *span, const char *event_name, void *attr_map);
 void otelc_end_span(void *span);
 ```
 
+Example 1 : Create a span
+
+```C
+#include <opentelemetry_c/opentelemetry_c.h>
+
+int main(void) {
+  otelc_init_tracer_provider("example", "0.0.1", "",
+                             "machine-0.0.1");
+  void *tracer = otelc_get_tracer();
+  void *span = otelc_start_span(tracer, "get-hello", OTELC_SPAN_KIND_CLIENT, "");
+  // Do something
+  // ...
+  otelc_end_span(span);
+  otelc_destroy_tracer(tracer);
+  return 0;
+}
+```
+
+Example 2 : Create a span from and extract the context. This context can be sent to another host for cross host tracing.
+```C
+#include <opentelemetry_c/opentelemetry_c.h>
+#include <stdlib.h>
+
+int main(void) {
+  otelc_init_tracer_provider("example", "0.0.1", "",
+                             "machine-0.0.1");
+  
+  // Get remote context from 
+  void *tracer = otelc_get_tracer();
+  void *span = otelc_start_span(tracer, "get-hello", OTELC_SPAN_KIND_CLIENT, "");
+  char *span_contexnt = otelc_extract_context_from_current_span(span);
+  // Send the context by network and do something
+  // ...
+  free(span_contexnt);
+  otelc_end_span(span);
+  otelc_destroy_tracer(tracer);
+  return 0;
+}
+```
+
+Example 3 : Create a span from a remote context.
+```C
+#include <opentelemetry_c/opentelemetry_c.h>
+#include <stdlib.h>
+
+int main(void) {
+  otelc_init_tracer_provider("example", "0.0.1", "",
+                             "machine-0.0.1");
+  
+  // Get remote context from 
+  void *tracer = otelc_get_tracer();
+  // Receive a remote context
+  char *remote_contexnt = "The context received";
+  // Start a span with the context received
+  void *span = otelc_start_span(tracer, "get-hello", OTELC_SPAN_KIND_SERVER, remote_context);
+  // So something
+  // ...
+  otelc_end_span(span);
+  free(remote_contexnt);
+  otelc_destroy_tracer(tracer);
+  return 0;
+}
+```
+
 ### Metrics
 
 The following functions are available for initializing and creating various types of metrics objects, such as counters. These metrics objects can be used to collect data on the performance of a service.
@@ -453,6 +552,84 @@ void otelc_int64_observable_up_down_counter_cancel_registration(void *counter,
  * @param counter The counter
  */
 void otelc_destroy_observable_up_down_counter(void *counter);
+```
+
+Example 1 : Asynchronous counter
+```C
+// TODO
+#include <opentelemetry_c/opentelemetry_c.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+/**
+ * @brief Function called periodically by the counter to get the difference
+ * between the current observation and the last sent
+ */
+int64_t counter_callback() {
+  static int64_t last_n_active_requests = 0;
+  int64_t current_n_active_requests = rand() % 100;
+  int64_t delta = current_n_active_requests - last_n_active_requests;
+  last_n_active_requests = current_n_active_requests;
+  printf("n_active_requests=%ld\n", current_n_active_requests);
+  printf("delta=%ld\n", delta);
+  return delta;
+}
+
+int main() {
+  printf("Observable Up Down Counter Basic example starts ...!\n");
+  srand(0); // NOLINT
+  otelc_init_metrics_provider("test_service", "0.0.1", "com.test",
+                              "fake-instance-id-123456789", 1000, 500);
+  void *counter = otelc_create_int64_observable_up_down_counter(
+      "n_active_requests", "Simple counter to keep track of the number of "
+                           "active requests in the system");
+  void *registration = otelc_int64_observable_up_down_counter_register_callback(
+      counter, &counter_callback);
+  sleep(60); // Give time to counter to call callback few times
+  otelc_int64_observable_up_down_counter_cancel_registration(counter,
+                                                             registration);
+  otelc_destroy_observable_up_down_counter(counter);
+  printf("Observable Up Down Counter Basic example ends ...!\n");
+  return 0;
+}
+```
+
+Example 2 : Synchronous counter
+```C
+#include <opentelemetry_c/opentelemetry_c.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+  printf("Up Down Counter Basic example starts ...!\n");
+  srand(0); // NOLINT
+  otelc_init_metrics_provider("test_service", "0.0.1", "com.test",
+                              "fake-instance-id-123456789", 1000, 500);
+  void *counter = otelc_create_int64_up_down_counter(
+      "n_active_requests", "Simple counter to keep track of the number of "
+                           "active requests in the system");
+  int64_t n_active_requests = 0;
+  otelc_int64_up_down_counter_add(counter, 0);
+  for (int i = 0; i < 60; i++) {
+    // Randomly generate a number for active requests
+    int64_t n_active_requests_new = rand() % 100; // NOLINT
+    int64_t delta = n_active_requests_new - n_active_requests;
+    printf("n_active_requests=%ld\n", n_active_requests_new);
+    printf("delta=%ld\n", delta);
+    otelc_int64_up_down_counter_add(counter, delta);
+    n_active_requests = n_active_requests_new;
+    // The work : Sleep between 0 and 1 second
+    usleep(1000000.0F / RAND_MAX * rand()); // NOLINT
+  }
+  sleep(2); // Give time to process the last metric
+  otelc_destroy_up_down_counter(counter);
+  printf("Up Down Counter Basic example ends ...!\n");
+  return 0;
+}
 ```
 
 ## Repository examples
