@@ -10,9 +10,9 @@
 #include <unistd.h>
 
 int main(void) {
-  init_tracer_provider("client-server-socket-example-server", "0.0.1", "",
-               "machine-server-0.0.1");
-  void *tracer = get_tracer();
+  otelc_init_tracer_provider("client-server-socket-example-server", "0.0.1", "",
+                             "machine-server-0.0.1");
+  void *tracer = otelc_get_tracer();
 
   void *context = zmq_ctx_new();
   void *responder = zmq_socket(context, ZMQ_REP);
@@ -22,9 +22,8 @@ int main(void) {
   int request_nbr;
   for (request_nbr = 0; request_nbr != 5; request_nbr++) {
     char *remote_context = s_recv(responder);
-    void *span =
-        start_span(tracer, "get-hello-response", SPAN_KIND_SERVER,
-                            remote_context);
+    void *span = otelc_start_span(tracer, "get-hello-response",
+                                  OTELC_SPAN_KIND_SERVER, remote_context);
 
     char *message = s_recv(responder);
     printf("[server] Received context from client: %s\n", remote_context);
@@ -36,10 +35,10 @@ int main(void) {
     // In this example, context is useful only when we start a span
     s_send(responder, "World!");
 
-    end_span(span);
+    otelc_end_span(span);
   }
   zmq_close(responder);
   zmq_ctx_destroy(context);
-  destroy_tracer(tracer);
+  otelc_destroy_tracer(tracer);
   return 0;
 }

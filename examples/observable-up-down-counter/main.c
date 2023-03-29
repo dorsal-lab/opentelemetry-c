@@ -22,16 +22,17 @@ int64_t counter_callback() {
 int main() {
   printf("Observable Up Down Counter Basic example starts ...!\n");
   srand(0); // NOLINT
-  init_metrics_provider("test_service", "0.0.1", "com.test",
-                        "fake-instance-id-123456789", 1000, 500);
-  void *counter = create_int64_observable_up_down_counter(
+  otelc_init_metrics_provider("test_service", "0.0.1", "com.test",
+                              "fake-instance-id-123456789", 1000, 500);
+  void *counter = otelc_create_int64_observable_up_down_counter(
       "n_active_requests", "Simple counter to keep track of the number of "
                            "active requests in the system");
-  void *registration = int64_observable_up_down_counter_register_callback(
+  void *registration = otelc_int64_observable_up_down_counter_register_callback(
       counter, &counter_callback);
   sleep(60); // Give time to counter to call callback few times
-  int64_observable_up_down_counter_cancel_registration(counter, registration);
-  destroy_observable_up_down_counter(counter);
+  otelc_int64_observable_up_down_counter_cancel_registration(counter,
+                                                             registration);
+  otelc_destroy_observable_up_down_counter(counter);
   printf("Observable Up Down Counter Basic example ends ...!\n");
   return 0;
 }

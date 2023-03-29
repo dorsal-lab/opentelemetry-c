@@ -67,9 +67,10 @@ struct CounterCallbackRegistration {
   void *state;
 };
 
-void init_tracer_provider(const char *service_name, const char *service_version,
-                          const char *service_namespace,
-                          const char *service_instance_id) {
+void otelc_init_tracer_provider(const char *service_name,
+                                const char *service_version,
+                                const char *service_namespace,
+                                const char *service_instance_id) {
   resource::ResourceAttributes attributes = {
       {resource::SemanticConventions::kServiceName, std::string(service_name)},
       {resource::SemanticConventions::kServiceVersion,
@@ -116,66 +117,67 @@ void init_tracer_provider(const char *service_name, const char *service_version,
           new trace::propagation::HttpTraceContext()));
 }
 
-void *get_tracer() {
+void *otelc_get_tracer() {
   auto provider = opentelemetry::trace::Provider::GetTracerProvider();
   return new nostd::shared_ptr<trace::Tracer>(provider->GetTracer(
       std::string("opentelemetry-c"), std::string(OPENTELEMETRY_VERSION)));
 }
 
-void destroy_tracer(void *tracer) {
+void otelc_destroy_tracer(void *tracer) {
   delete static_cast<nostd::shared_ptr<trace::Tracer> *>(tracer);
 }
 
-void *create_attr_map() { return new AttrMap; }
+void *otelc_create_attr_map() { return new AttrMap; }
 
-void set_bool_attr(void *attr_map, const char *key, int boolean_value) {
+void otelc_set_bool_attr(void *attr_map, const char *key, int boolean_value) {
   (*static_cast<AttrMap *>(attr_map))[key] = !!boolean_value;
 }
 
-void set_int32_t_attr(void *attr_map, const char *key, int32_t value) {
+void otelc_set_int32_t_attr(void *attr_map, const char *key, int32_t value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void set_int64_t_attr(void *attr_map, const char *key, int64_t value) {
+void otelc_set_int64_t_attr(void *attr_map, const char *key, int64_t value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void set_uint64_t_attr(void *attr_map, const char *key, uint64_t value) {
+void otelc_set_uint64_t_attr(void *attr_map, const char *key, uint64_t value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void set_double_attr(void *attr_map, const char *key, double value) {
+void otelc_set_double_attr(void *attr_map, const char *key, double value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void set_str_attr(void *attr_map, const char *key, const char *value) {
+void otelc_set_str_attr(void *attr_map, const char *key, const char *value) {
   (*static_cast<AttrMap *>(attr_map))[key] = value;
 }
 
-void destroy_attr_map(void *attr_map) {
+void otelc_destroy_attr_map(void *attr_map) {
   delete static_cast<AttrMap *>(attr_map);
 }
 
-void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
-                 const char *remote_context) {
+void *otelc_start_span(void *tracer, const char *span_name,
+                       otelc_span_kind_t span_kind,
+                       const char *remote_context) {
   // Span options
   trace::StartSpanOptions options;
 
   trace::SpanKind otel_span_kind;
   switch (span_kind) {
-  case SPAN_KIND_INTERNAL:
+  case OTELC_SPAN_KIND_INTERNAL:
     otel_span_kind = trace::SpanKind::kInternal;
     break;
-  case SPAN_KIND_SERVER:
+  case OTELC_SPAN_KIND_SERVER:
     otel_span_kind = trace::SpanKind::kServer;
     break;
-  case SPAN_KIND_CLIENT:
+  case OTELC_SPAN_KIND_CLIENT:
     otel_span_kind = trace::SpanKind::kClient;
     break;
-  case SPAN_KIND_PRODUCER:
+  case OTELC_SPAN_KIND_PRODUCER:
     otel_span_kind = trace::SpanKind::kProducer;
     break;
-  case SPAN_KIND_CONSUMER:
+  case OTELC_SPAN_KIND_CONSUMER:
     otel_span_kind = trace::SpanKind::kConsumer;
     break;
   default:
@@ -203,7 +205,7 @@ void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
   return new SpanAndContext{span, scope, new_ctx};
 }
 
-char *extract_context_from_current_span(void *span) {
+char *otelc_extract_context_from_current_span(void *span) {
   auto *span_and_context = static_cast<SpanAndContext *>(span);
   auto prop =
       context::propagation::GlobalTextMapPropagator::GetGlobalPropagator();
@@ -216,18 +218,18 @@ char *extract_context_from_current_span(void *span) {
   return buffer;
 }
 
-void set_span_status(void *span, span_status_code_t code,
-                     const char *description) {
+void otelc_set_span_status(void *span, otelc_span_status_code_t code,
+                           const char *description) {
   auto *span_and_context = static_cast<SpanAndContext *>(span);
   trace::StatusCode otel_code;
   switch (code) {
-  case SPAN_STATUS_CODE_UNSET:
+  case OTELC_SPAN_STATUS_CODE_UNSET:
     otel_code = trace::StatusCode::kUnset;
     break;
-  case SPAN_STATUS_CODE_OK:
+  case OTELC_SPAN_STATUS_CODE_OK:
     otel_code = trace::StatusCode::kOk;
     break;
-  case SPAN_STATUS_CODE_ERROR:
+  case OTELC_SPAN_STATUS_CODE_ERROR:
     otel_code = trace::StatusCode::kError;
     break;
   default:
@@ -236,7 +238,7 @@ void set_span_status(void *span, span_status_code_t code,
   span_and_context->span->SetStatus(otel_code, std::string(description));
 }
 
-void set_span_attrs(void *span, void *attr_map) {
+void otelc_set_span_attrs(void *span, void *attr_map) {
   auto *span_and_context = static_cast<SpanAndContext *>(span);
   auto *attr_map_p = static_cast<AttrMap *>(attr_map);
   for (auto const &map_entry : *attr_map_p) {
@@ -244,24 +246,24 @@ void set_span_attrs(void *span, void *attr_map) {
   }
 }
 
-void add_span_event(void *span, const char *event_name, void *attr_map) {
+void otelc_add_span_event(void *span, const char *event_name, void *attr_map) {
   auto *span_and_context = static_cast<SpanAndContext *>(span);
   auto *attr_map_p = static_cast<AttrMap *>(attr_map);
   span_and_context->span->AddEvent(event_name, *attr_map_p);
 }
 
-void end_span(void *span) {
+void otelc_end_span(void *span) {
   auto *span_and_context = static_cast<SpanAndContext *>(span);
   (*span_and_context).span->End();
   delete span_and_context;
 }
 
-void init_metrics_provider(const char *service_name,
-                           const char *service_version,
-                           const char *service_namespace,
-                           const char *service_instance_id,
-                           int64_t export_interval_millis,
-                           int64_t export_timeout_millis) {
+void otelc_init_metrics_provider(const char *service_name,
+                                 const char *service_version,
+                                 const char *service_namespace,
+                                 const char *service_instance_id,
+                                 int64_t export_interval_millis,
+                                 int64_t export_timeout_millis) {
   resource::ResourceAttributes attributes = {
       {resource::SemanticConventions::kServiceName, std::string(service_name)},
       {resource::SemanticConventions::kServiceVersion,
@@ -296,7 +298,8 @@ void init_metrics_provider(const char *service_name,
   metrics_api::Provider::SetMeterProvider(provider);
 }
 
-void *create_int64_up_down_counter(const char *name, const char *description) {
+void *otelc_create_int64_up_down_counter(const char *name,
+                                         const char *description) {
   auto provider = metrics_api::Provider::GetMeterProvider();
   auto p = dynamic_cast<metrics_sdk::MeterProvider *>(provider.get());
   // up down counter view
@@ -317,19 +320,19 @@ void *create_int64_up_down_counter(const char *name, const char *description) {
       meter->CreateInt64UpDownCounter(counter_name, description));
 }
 
-void int64_up_down_counter_add(void *counter, int64_t value) {
+void otelc_int64_up_down_counter_add(void *counter, int64_t value) {
   static_cast<nostd::unique_ptr<metrics_api::UpDownCounter<int64_t>> *>(counter)
       ->get()
       ->Add(value, context::RuntimeContext::GetCurrent());
 }
 
-void destroy_up_down_counter(void *counter) {
+void otelc_destroy_up_down_counter(void *counter) {
   delete static_cast<nostd::unique_ptr<metrics_api::UpDownCounter<int64_t>> *>(
       counter);
 }
 
-void *create_int64_observable_up_down_counter(const char *name,
-                                              const char *description) {
+void *otelc_create_int64_observable_up_down_counter(const char *name,
+                                                    const char *description) {
   auto provider = metrics_api::Provider::GetMeterProvider();
   auto p = dynamic_cast<metrics_sdk::MeterProvider *>(provider.get());
   // up down counter view
@@ -367,9 +370,8 @@ static void counter_observable_fetcher(
   }
 }
 
-void *
-int64_observable_up_down_counter_register_callback(void *counter,
-                                                   int64_t (*callback)()) {
+void *otelc_int64_observable_up_down_counter_register_callback(
+    void *counter, int64_t (*callback)()) {
   metrics_api::ObservableCallbackPtr counter_callback =
       counter_observable_fetcher<int64_t>;
   auto counter_state = (void *)callback;
@@ -379,8 +381,8 @@ int64_observable_up_down_counter_register_callback(void *counter,
   return new CounterCallbackRegistration{counter_callback, counter_state};
 }
 
-void int64_observable_up_down_counter_cancel_registration(void *counter,
-                                                          void *registration) {
+void otelc_int64_observable_up_down_counter_cancel_registration(
+    void *counter, void *registration) {
   auto counter_p =
       static_cast<nostd::shared_ptr<metrics_api::ObservableInstrument> *>(
           counter);
@@ -391,7 +393,7 @@ void int64_observable_up_down_counter_cancel_registration(void *counter,
   delete registration_p;
 }
 
-void destroy_observable_up_down_counter(void *counter) {
+void otelc_destroy_observable_up_down_counter(void *counter) {
   delete static_cast<nostd::shared_ptr<metrics_api::ObservableInstrument> *>(
       counter);
 }

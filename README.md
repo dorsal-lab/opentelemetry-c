@@ -174,7 +174,7 @@ The following functions can be used for initializing and using tracers in applic
  * @param service_namespace The service namespace
  * @param service_instance_id The host instance id
  */
-void init_tracer_provider(const char *service_name, const char *service_version,
+void otelc_init_tracer_provider(const char *service_name, const char *service_version,
                           const char *service_namespace,
                           const char *service_instance_id);
 
@@ -187,14 +187,14 @@ void init_tracer_provider(const char *service_name, const char *service_version,
  *
  * @return void*
  */
-void *get_tracer();
+void *otelc_get_tracer();
 
 /**
  * @brief Deallocate all resources used by the tracer
  *
  * @param tracer The tracer we want to destroy
  */
-void destroy_tracer(void *tracer);
+void otelc_destroy_tracer(void *tracer);
 ```
 
 ### Attributes map
@@ -202,44 +202,44 @@ void destroy_tracer(void *tracer);
 The following functions are available to create, modify, and destroy an attribute map:
 
 ```C
-void *create_attr_map();
+void *otelc_create_attr_map();
 /**
  * @brief Create a map of attribute (std::map<std::string,
  * opentelemetry::common::AttributeValue>).
  *
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_bool_attr(void *attr_map, const char *key, int boolean_value);
+void otelc_set_bool_attr(void *attr_map, const char *key, int boolean_value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_int32_t_attr(void *attr_map, const char *key, int32_t value);
+void otelc_set_int32_t_attr(void *attr_map, const char *key, int32_t value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_int64_t_attr(void *attr_map, const char *key, int64_t value);
+void otelc_set_int64_t_attr(void *attr_map, const char *key, int64_t value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_uint64_t_attr(void *attr_map, const char *key, uint64_t value);
+void otelc_set_uint64_t_attr(void *attr_map, const char *key, uint64_t value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_double_attr(void *attr_map, const char *key, double value);
+void otelc_set_double_attr(void *attr_map, const char *key, double value);
 
 /**
  * See https://opentelemetry.io/docs/reference/specification/common/#attribute
  */
-void set_str_attr(void *attr_map, const char *key, const char *value);
+void otelc_set_str_attr(void *attr_map, const char *key, const char *value);
 
 /**
  * @brief Deallocate map memory
  */
-void destroy_attr_map(void *attr_map);
+void otelc_destroy_attr_map(void *attr_map);
 ```
 
 ### Spans
@@ -253,12 +253,12 @@ The following functions and types are available for creating, managing and endin
  * See https://opentelemetry.io/docs/reference/specification/trace/api/#spankind
  */
 typedef enum { // NOLINTBEGIN
-  SPAN_KIND_INTERNAL,
-  SPAN_KIND_SERVER,
-  SPAN_KIND_CLIENT,
-  SPAN_KIND_PRODUCER,
-  SPAN_KIND_CONSUMER
-} span_kind_t; // NOLINTEND
+  OTELC_SPAN_KIND_INTERNAL,
+  OTELC_SPAN_KIND_SERVER,
+  OTELC_SPAN_KIND_CLIENT,
+  OTELC_SPAN_KIND_PRODUCER,
+  OTELC_SPAN_KIND_CONSUMER
+} otelc_span_kind_t; // NOLINTEND
 
 /**
  * @brief Create a new span
@@ -273,7 +273,7 @@ typedef enum { // NOLINTBEGIN
  * optional when creating nested spans in the same thread
  * @return void* The span
  */
-void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
+void *otelc_start_span(void *tracer, const char *span_name, otelc_span_kind_t span_kind,
                  const char *remote_context);
 
 /**
@@ -291,7 +291,7 @@ void *start_span(void *tracer, const char *span_name, span_kind_t span_kind,
  * @param span The span
  * @return char* The context serialized
  */
-char *extract_context_from_current_span(void *span);
+char *otelc_extract_context_from_current_span(void *span);
 
 /**
  * @brief Define a span status
@@ -300,10 +300,10 @@ char *extract_context_from_current_span(void *span);
  * https://opentelemetry.io/docs/reference/specification/trace/api/#set-status
  */
 typedef enum { // NOLINTBEGIN
-  SPAN_STATUS_CODE_UNSET,
-  SPAN_STATUS_CODE_OK,
-  SPAN_STATUS_CODE_ERROR
-} span_status_code_t; // NOLINTEND
+  OTELC_SPAN_STATUS_CODE_UNSET,
+  OTELC_SPAN_STATUS_CODE_OK,
+  OTELC_SPAN_STATUS_CODE_ERROR
+} otelc_span_status_code_t; // NOLINTEND
 
 /**
  * @brief Set the status of an span
@@ -316,7 +316,7 @@ typedef enum { // NOLINTBEGIN
  * @param description A description. The description matters only for the error
  * status code
  */
-void set_span_status(void *span, span_status_code_t code,
+void otelc_set_span_status(void *span, otelc_span_status_code_t code,
                      const char *description);
 
 /**
@@ -328,7 +328,7 @@ void set_span_status(void *span, span_status_code_t code,
  * @param span The span
  * @param attr_map The map with all attributes
  */
-void set_span_attrs(void *span, void *attr_map);
+void otelc_set_span_attrs(void *span, void *attr_map);
 
 /**
  * @brief Add a span event
@@ -340,14 +340,14 @@ void set_span_attrs(void *span, void *attr_map);
  * @param event_name The event name
  * @param attr_map The map with all event attributes
  */
-void add_span_event(void *span, const char *event_name, void *attr_map);
+void otelc_add_span_event(void *span, const char *event_name, void *attr_map);
 
 /**
  * @brief Ends a deallocated memory relating to a span
  *
  * @param span The span we want to end
  */
-void end_span(void *span);
+void otelc_end_span(void *span);
 ```
 
 ### Metrics
@@ -372,7 +372,7 @@ The following functions are available for initializing and creating various type
  * @param export_timeout_millis How long the export can run before it is
  * cancelled
  */
-void init_metrics_provider(const char *service_name,
+void otelc_init_metrics_provider(const char *service_name,
                            const char *service_version,
                            const char *service_namespace,
                            const char *service_instance_id,
@@ -389,7 +389,7 @@ void init_metrics_provider(const char *service_name,
  * @param description A description of what the counter does
  * @return void* The counter
  */
-void *create_int64_up_down_counter(const char *name, const char *description);
+void *otelc_create_int64_up_down_counter(const char *name, const char *description);
 
 /**
  * @brief Increment or decrement the UpDownCounter by a fixed amount
@@ -399,14 +399,14 @@ void *create_int64_up_down_counter(const char *name, const char *description);
  * @param counter The counter
  * @param value The increment or decrement
  */
-void int64_up_down_counter_add(void *counter, int64_t value);
+void otelc_int64_up_down_counter_add(void *counter, int64_t value);
 
 /**
  * @brief Deallocate all resources used by the counter
  *
  * @param counter The counter
  */
-void destroy_up_down_counter(void *counter);
+void otelc_destroy_up_down_counter(void *counter);
 
 /**
  * @brief Create a int64 asynchronous up down counter
@@ -418,7 +418,7 @@ void destroy_up_down_counter(void *counter);
  * @param description A description of what the counter does
  * @return void* The counter
  */
-void *create_int64_observable_up_down_counter(const char *name,
+void *otelc_create_int64_observable_up_down_counter(const char *name,
                                               const char *description);
 
 /**
@@ -432,7 +432,7 @@ void *create_int64_observable_up_down_counter(const char *name,
  * to the counter
  * @return void* The callback registration that should be use to cancel it
  */
-void *int64_observable_up_down_counter_register_callback(void *counter,
+void *otelc_int64_observable_up_down_counter_register_callback(void *counter,
                                                          int64_t (*callback)());
 
 /**
@@ -444,7 +444,7 @@ void *int64_observable_up_down_counter_register_callback(void *counter,
  * @param counter The counter
  * @param registration The callback registration
  */
-void int64_observable_up_down_counter_cancel_registration(void *counter,
+void otelc_int64_observable_up_down_counter_cancel_registration(void *counter,
                                                            void *registration);
 
 /**
@@ -452,7 +452,7 @@ void int64_observable_up_down_counter_cancel_registration(void *counter,
  *
  * @param counter The counter
  */
-void destroy_observable_up_down_counter(void *counter);
+void otelc_destroy_observable_up_down_counter(void *counter);
 ```
 
 ## Repository examples
