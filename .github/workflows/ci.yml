@@ -17,6 +17,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+
   lttng-otelcpp-deploy:
     runs-on: ubuntu-latest
 
