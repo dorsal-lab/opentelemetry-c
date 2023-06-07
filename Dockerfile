@@ -1,4 +1,4 @@
-FROM ghcr.io/augustinsangam/lttng-otelcpp:main
+FROM ghcr.io/dorsal-lab/lttng-otelcpp:main
 
 RUN ldconfig
 
