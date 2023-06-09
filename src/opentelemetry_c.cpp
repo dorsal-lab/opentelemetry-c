@@ -91,7 +91,7 @@ void otelc_init_tracer_provider(const char *service_name,
 #ifdef BATCH_SPAN_PROCESSOR_ENABLED
   trace_sdk::BatchSpanProcessorOptions opts;
 #ifdef BATCH_SPAN_PROCESSOR_MAX_QUEUE_SIZE
-  opts.max_export_batch_size = BATCH_SPAN_PROCESSOR_MAX_QUEUE_SIZE;
+  opts.max_queue_size = BATCH_SPAN_PROCESSOR_MAX_QUEUE_SIZE;
 #endif
 #ifdef BATCH_SPAN_PROCESSOR_SCHEDULE_DELAY_MILLIS
   opts.schedule_delay_millis =
