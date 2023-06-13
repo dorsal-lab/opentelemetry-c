@@ -13,6 +13,8 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif ()
 
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 find_package(opentelemetry-cpp 1.8.1 CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME})
