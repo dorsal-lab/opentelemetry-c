@@ -80,14 +80,17 @@ RUN cd grpc &&\
 # Install opentelemetry 1.8.1
 WORKDIR /tmp
 RUN git clone --recurse-submodules "-j$(nproc)" -b v1.8.1 --depth 1 --shallow-submodules https://github.com/open-telemetry/opentelemetry-cpp.git
-RUN cd opentelemetry-cpp &&\
-	mkdir -p build &&\
+WORKDIR /tmp/opentelemetry-cpp
+COPY protobuf_libraries_as_private_dependencies.patch .
+RUN git apply protobuf_libraries_as_private_dependencies.patch
+RUN	mkdir -p build &&\
 	cd build &&\
 	cmake -DBUILD_TESTING=OFF \
 		-DWITH_BENCHMARK=OFF \
 		-DWITH_EXAMPLES=OFF \
 		-DWITH_OTLP=ON \
 		-DWITH_OTLP_GRPC=ON \
+        -DWITH_OTLP_HTTP=OFF \
 		-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 		-DBUILD_SHARED_LIBS=ON \
 		-DCMAKE_INSTALL_PREFIX=/usr/local/ \
