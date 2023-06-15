@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(opentelemetry-c VERSION 1.0.0)
+project(opentelemetry-c
+        VERSION 1.0.0
+        DESCRIPTION "Library wrapper around the official opentelemetry-cpp library"
+        LANGUAGES C CXX
+        )
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
 
@@ -62,3 +66,16 @@ install(TARGETS ${PROJECT_NAME} EXPORT "${PROJECT_NAME}-target"
 
 install(FILES include/opentelemetry_c/opentelemetry_c.h
         DESTINATION include/opentelemetry_c)
+
+# pkgconfig
+set(CMAKE_INSTALL_FULL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
+set(CMAKE_INSTALL_FULL_INCLUDEDIR ${CMAKE_INSTALL_PREFIX}/include)
+configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.pc.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+        @ONLY
+)
+install(
+        FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+        DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig
+)
