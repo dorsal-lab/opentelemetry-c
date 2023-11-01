@@ -6,10 +6,6 @@
 
 /**
  * @brief Generate some logs
- *
- * The visualization should look like this :
- *
- *
  */
 int main() {
   printf("Basic Log example starts ...!\n");
@@ -17,8 +13,6 @@ int main() {
   srand(0); // NOLINT
 
   otelc_init_logger_provider("test_service", "0.0.1", "com.test",
-                             "fake-instance-id-123456789");
-  otelc_init_tracer_provider("test_service", "0.0.1", "com.test",
                              "fake-instance-id-123456789");
   void *logger = otelc_get_logger();
 
