@@ -14,6 +14,7 @@ RUN mkdir -p build &&\
     make install
 
 CMD ./run.sh basic && \
+	./run.sh basic-log && \
 	./run.sh up-down-counter && \
 	./run.sh observable-up-down-counter && \
 	./run.sh client-server-socket

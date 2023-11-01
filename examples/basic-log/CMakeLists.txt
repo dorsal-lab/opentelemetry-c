@@ -1,0 +1,5 @@
+project(basic-log-example C)
+set(CMAKE_C_STANDARD 11)
+add_executable(basic-log-example)
+target_sources(basic-log-example PRIVATE main.c)
+target_link_libraries(basic-log-example PRIVATE opentelemetry-c)

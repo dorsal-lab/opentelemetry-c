@@ -47,6 +47,7 @@ if (LTTNG_EXPORTER_ENABLED)
             src/utils/lttng_metrics_exporter.cpp
             src/utils/lttng_opentelemetry_exporter_tracepoints.cpp
             src/utils/lttng_spans_exporter.cpp
+            src/utils/lttng_logs_exporter.cpp
             )
 endif ()
 

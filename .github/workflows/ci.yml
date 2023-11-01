@@ -104,6 +104,7 @@ jobs:
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
           run: |
             ./run.sh basic
+            ./run.sh basic-log
             ./run.sh up-down-counter
             ./run.sh observable-up-down-counter
             ./run.sh client-server-socket

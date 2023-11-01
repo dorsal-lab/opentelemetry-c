@@ -301,6 +301,86 @@ void otelc_int64_observable_up_down_counter_cancel_registration(
  */
 void otelc_destroy_observable_up_down_counter(void *counter);
 
+//////////////////////////////////////////////////////////////////////////
+// Logs
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Get the logger
+ *
+ * Read more on
+ * https://opentelemetry.io/docs/specs/otel/logs/bridge-api/#get-a-logger
+ *
+ * @param service_name The name of the service we are tracing
+ * @param service_version The version of the service
+ * @param service_namespace The service namespace
+ * @param service_instance_id The host instance id
+ */
+void otelc_init_logger_provider(const char *service_name,
+                                const char *service_version,
+                                const char *service_namespace,
+                                const char *service_instance_id);
+
+/**
+ * @brief Get the logger object
+ * The logger object is used to emit log records
+ *
+ * Read more on :
+ * https://opentelemetry.io/docs/specs/otel/logs/bridge-api/#emit-a-logrecord
+ *
+ * @return void*
+ */
+void *otelc_get_logger();
+
+/**
+ * @brief Deallocate all resources used by the logger
+ * @param logger
+ */
+void otelc_destroy_logger(void *logger);
+
+/**
+ * @brief Define the log severity
+ *
+ * Read more on : https://opentelemetry.io/docs/specs/otel/logs/data-model/#displaying-severity
+ */
+typedef enum { // NOLINTBEGIN
+  OTEL_C_LOG_SEVERITY_KINVALID,
+  OTEL_C_LOG_SEVERITY_KTRACE,
+  OTEL_C_LOG_SEVERITY_KTRACE2,
+  OTEL_C_LOG_SEVERITY_KTRACE3,
+  OTEL_C_LOG_SEVERITY_KTRACE4,
+  OTEL_C_LOG_SEVERITY_KDEBUG,
+  OTEL_C_LOG_SEVERITY_KDEBUG2,
+  OTEL_C_LOG_SEVERITY_KDEBUG3,
+  OTEL_C_LOG_SEVERITY_KDEBUG4,
+  OTEL_C_LOG_SEVERITY_KINFO,
+  OTEL_C_LOG_SEVERITY_KINFO2,
+  OTEL_C_LOG_SEVERITY_KINFO3,
+  OTEL_C_LOG_SEVERITY_KINFO4,
+  OTEL_C_LOG_SEVERITY_KWARN,
+  OTEL_C_LOG_SEVERITY_KWARN2,
+  OTEL_C_LOG_SEVERITY_KWARN3,
+  OTEL_C_LOG_SEVERITY_KWARN4,
+  OTEL_C_LOG_SEVERITY_KERROR,
+  OTEL_C_LOG_SEVERITY_KERROR2,
+  OTEL_C_LOG_SEVERITY_KERROR3,
+  OTEL_C_LOG_SEVERITY_KERROR4,
+  OTEL_C_LOG_SEVERITY_KFATAL,
+  OTEL_C_LOG_SEVERITY_KFATAL2,
+  OTEL_C_LOG_SEVERITY_KFATAL3,
+  OTEL_C_LOG_SEVERITY_KFATAL4
+} otelc_log_severity_t; // NOLINTEND
+
+/**
+ * @brief Emit a log record
+ *
+ * Read more : https://opentelemetry.io/docs/specs/otel/logs/bridge-api/#emit-a-logrecord
+ *
+ * @param severity
+ * @param body
+ */
+void otelc_log(void *logger, otelc_log_severity_t severity, const char *body);
+
 #ifdef __cplusplus
 }
 #endif

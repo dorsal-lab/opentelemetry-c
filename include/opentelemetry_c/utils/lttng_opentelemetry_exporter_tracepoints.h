@@ -42,6 +42,19 @@ LTTNG_UST_TRACEPOINT_EVENT(
                                                  resource_metrics, unsigned int,
                                                  resource_metrics_size)))
 
+LTTNG_UST_TRACEPOINT_EVENT(
+    /* Tracepoint provider name */
+    opentelemetry,
+    /* Tracepoint class name */
+    resource_logs,
+    /* Input arguments */
+    LTTNG_UST_TP_ARGS(const uint8_t *, resource_logs, unsigned int,
+                      resource_logs_size),
+    /* Output event fields */
+    LTTNG_UST_TP_FIELDS(lttng_ust_field_sequence(uint8_t, resource_logs,
+                                                 resource_logs, unsigned int,
+                                                 resource_logs_size)))
+
 #endif /* _LTTNG_OPENTELEMETRY_EXPORTER_TRACEPOINTS_H */
 
 #include <lttng/tracepoint-event.h>

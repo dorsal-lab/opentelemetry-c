@@ -5,6 +5,7 @@
 #endif // LTTNG_EXPORTER_ENABLED
 
 #ifdef LTTNG_EXPORTER_ENABLED
+#include "opentelemetry_c/utils/lttng_logs_exporter.h"
 #include "opentelemetry_c/utils/lttng_metrics_exporter.h"
 #include "opentelemetry_c/utils/lttng_spans_exporter.h"
 #endif // LTTNG_EXPORTER_ENABLED
@@ -32,6 +33,10 @@
 #else
 #include <opentelemetry/sdk/trace/simple_processor_factory.h>
 #endif
+#include <opentelemetry/logs/logger_provider.h>
+#include <opentelemetry/logs/provider.h>
+#include <opentelemetry/sdk/logs/logger_provider_factory.h>
+#include <opentelemetry/sdk/logs/simple_log_record_processor_factory.h>
 #include <opentelemetry/sdk/trace/tracer_provider_factory.h>
 #include <opentelemetry/trace/context.h>
 #include <opentelemetry/trace/propagation/http_trace_context.h>
@@ -53,6 +58,7 @@ namespace nostd = opentelemetry::nostd;
 namespace resource = opentelemetry::sdk::resource;
 namespace trace = opentelemetry::trace;
 namespace trace_sdk = opentelemetry::sdk::trace;
+namespace logs = opentelemetry::logs;
 
 using AttrMap = std::map<std::string, opentelemetry::common::AttributeValue>;
 
@@ -396,4 +402,126 @@ void otelc_int64_observable_up_down_counter_cancel_registration(
 void otelc_destroy_observable_up_down_counter(void *counter) {
   delete static_cast<nostd::shared_ptr<metrics_api::ObservableInstrument> *>(
       counter);
+}
+
+void otelc_init_logger_provider(const char *service_name,
+                                const char *service_version,
+                                const char *service_namespace,
+                                const char *service_instance_id) {
+  resource::ResourceAttributes attributes = {
+      {resource::SemanticConventions::kServiceName, std::string(service_name)},
+      {resource::SemanticConventions::kServiceVersion,
+       std::string(service_version)},
+      {resource::SemanticConventions::kServiceNamespace,
+       std::string(service_namespace)},
+      {resource::SemanticConventions::kServiceInstanceId,
+       std::string(service_instance_id)},
+  };
+  auto resource = resource::Resource::Create(attributes);
+#ifdef LTTNG_EXPORTER_ENABLED
+    std::unique_ptr<logs_sdk::LogRecordExporter> exporter{new
+    LttngLogsExporter};
+#else
+  std::unique_ptr<logs_sdk::LogRecordExporter> exporter{
+      new opentelemetry::exporter::otlp::OtlpGrpcLogRecordExporter};
+#endif // LTTNG_EXPORTER_ENABLED
+  auto processor =
+      logs_sdk::SimpleLogRecordProcessorFactory::Create(std::move(exporter));
+  std::shared_ptr<logs::LoggerProvider> provider =
+      logs_sdk::LoggerProviderFactory::Create(std::move(processor));
+  logs::Provider::SetLoggerProvider(provider);
+}
+
+void *otelc_get_logger() {
+  auto provider = logs::Provider::GetLoggerProvider();
+  return new nostd::shared_ptr<logs::Logger>(provider->GetLogger(
+      std::string("opentelemetry-c-logger"), "", std::string("opentelemetry-c"),
+      std::string(OPENTELEMETRY_VERSION)));
+}
+
+void otelc_destroy_logger(void *logger) {
+  delete static_cast<nostd::shared_ptr<logs::Logger> *>(logger);
+}
+
+void otelc_log(void *logger, otelc_log_severity_t severity, const char *body) {
+  auto *logger_p = static_cast<nostd::shared_ptr<logs::Logger> *>(logger);
+  logs::Severity otel_log_severity;
+  switch (severity) {
+  case OTEL_C_LOG_SEVERITY_KINVALID:
+    otel_log_severity = logs::Severity::kInvalid;
+    break;
+  case OTEL_C_LOG_SEVERITY_KTRACE:
+    otel_log_severity = logs::Severity::kTrace;
+    break;
+  case OTEL_C_LOG_SEVERITY_KTRACE2:
+    otel_log_severity = logs::Severity::kTrace2;
+    break;
+  case OTEL_C_LOG_SEVERITY_KTRACE3:
+    otel_log_severity = logs::Severity::kTrace3;
+    break;
+  case OTEL_C_LOG_SEVERITY_KTRACE4:
+    otel_log_severity = logs::Severity::kTrace4;
+    break;
+  case OTEL_C_LOG_SEVERITY_KDEBUG:
+    otel_log_severity = logs::Severity::kDebug;
+    break;
+  case OTEL_C_LOG_SEVERITY_KDEBUG2:
+    otel_log_severity = logs::Severity::kDebug2;
+    break;
+  case OTEL_C_LOG_SEVERITY_KDEBUG3:
+    otel_log_severity = logs::Severity::kDebug3;
+    break;
+  case OTEL_C_LOG_SEVERITY_KDEBUG4:
+    otel_log_severity = logs::Severity::kDebug4;
+    break;
+  case OTEL_C_LOG_SEVERITY_KINFO:
+    otel_log_severity = logs::Severity::kInfo;
+    break;
+  case OTEL_C_LOG_SEVERITY_KINFO2:
+    otel_log_severity = logs::Severity::kInfo2;
+    break;
+  case OTEL_C_LOG_SEVERITY_KINFO3:
+    otel_log_severity = logs::Severity::kInfo3;
+    break;
+  case OTEL_C_LOG_SEVERITY_KINFO4:
+    otel_log_severity = logs::Severity::kInfo4;
+    break;
+  case OTEL_C_LOG_SEVERITY_KWARN:
+    otel_log_severity = logs::Severity::kWarn;
+    break;
+  case OTEL_C_LOG_SEVERITY_KWARN2:
+    otel_log_severity = logs::Severity::kWarn2;
+    break;
+  case OTEL_C_LOG_SEVERITY_KWARN3:
+    otel_log_severity = logs::Severity::kWarn3;
+    break;
+  case OTEL_C_LOG_SEVERITY_KWARN4:
+    otel_log_severity = logs::Severity::kWarn4;
+    break;
+  case OTEL_C_LOG_SEVERITY_KERROR:
+    otel_log_severity = logs::Severity::kError;
+    break;
+  case OTEL_C_LOG_SEVERITY_KERROR2:
+    otel_log_severity = logs::Severity::kError2;
+    break;
+  case OTEL_C_LOG_SEVERITY_KERROR3:
+    otel_log_severity = logs::Severity::kError3;
+    break;
+  case OTEL_C_LOG_SEVERITY_KERROR4:
+    otel_log_severity = logs::Severity::kError4;
+    break;
+  case OTEL_C_LOG_SEVERITY_KFATAL:
+    otel_log_severity = logs::Severity::kFatal;
+    break;
+  case OTEL_C_LOG_SEVERITY_KFATAL2:
+    otel_log_severity = logs::Severity::kFatal2;
+    break;
+  case OTEL_C_LOG_SEVERITY_KFATAL3:
+    otel_log_severity = logs::Severity::kFatal3;
+    break;
+  case OTEL_C_LOG_SEVERITY_KFATAL4:
+    otel_log_severity = logs::Severity::kFatal4;
+    break;
+  }
+  (*logger_p)->Log(otel_log_severity, std::string(body));
 }

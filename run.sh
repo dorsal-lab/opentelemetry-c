@@ -2,7 +2,7 @@
 set -e
 
 function usage() {
-    echo "Usage: ./run.sh basic|client-server-socket|up-down-counter|observable-up-down-counter"
+    echo "Usage: ./run.sh basic|basic-log|client-server-socket|up-down-counter|observable-up-down-counter"
 }
 
 build_dir=/tmp/opentelemetry-c-build
@@ -10,7 +10,7 @@ mkdir -p "$build_dir"
 
 case "$1" in
 
-basic | up-down-counter | observable-up-down-counter)
+basic | basic-log | up-down-counter | observable-up-down-counter)
     echo "Building $1-example target ..."
 
     cmake -B "$build_dir" -S . -D CMAKE_BUILD_TYPE=Release -D BUILD_EXAMPLES=ON
