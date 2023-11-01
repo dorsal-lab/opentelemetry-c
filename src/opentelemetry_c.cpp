@@ -18,6 +18,7 @@
 #include <opentelemetry/context/runtime_context.h>
 #ifndef LTTNG_EXPORTER_ENABLED
 #include <opentelemetry/exporters/otlp/otlp_grpc_metric_exporter.h>
+#include "opentelemetry/exporters/otlp/otlp_grpc_log_record_exporter_factory.h"
 #endif // LTTNG_EXPORTER_ENABLED
 #include <opentelemetry/metrics/async_instruments.h>
 #include <opentelemetry/metrics/provider.h>
@@ -59,6 +60,7 @@ namespace resource = opentelemetry::sdk::resource;
 namespace trace = opentelemetry::trace;
 namespace trace_sdk = opentelemetry::sdk::trace;
 namespace logs = opentelemetry::logs;
+namespace logs_sdk = opentelemetry::sdk::logs;
 
 using AttrMap = std::map<std::string, opentelemetry::common::AttributeValue>;
 
@@ -419,11 +421,10 @@ void otelc_init_logger_provider(const char *service_name,
   };
   auto resource = resource::Resource::Create(attributes);
 #ifdef LTTNG_EXPORTER_ENABLED
-    std::unique_ptr<logs_sdk::LogRecordExporter> exporter{new
-    LttngLogsExporter};
+  std::unique_ptr<logs_sdk::LogRecordExporter> exporter{new LttngLogsExporter};
 #else
-  std::unique_ptr<logs_sdk::LogRecordExporter> exporter{
-      new opentelemetry::exporter::otlp::OtlpGrpcLogRecordExporter};
+  std::unique_ptr<logs_sdk::LogRecordExporter> exporter =
+      opentelemetry::exporter::otlp::OtlpGrpcLogRecordExporterFactory::Create();
 #endif // LTTNG_EXPORTER_ENABLED
   auto processor =
       logs_sdk::SimpleLogRecordProcessorFactory::Create(std::move(exporter));
